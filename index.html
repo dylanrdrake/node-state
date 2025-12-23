@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test App</title>
+
+  <!-- for App #2 -->
+  <script type="importmap">
+    {
+      "imports": {
+        "state.js": "./lib/state.js"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <!-- App #1 -->
+  <script type="module" src="app.js"></script>
+  <div id="app"></div>
+
+  <br />
+  <br />
+
+  <!-- App #2 -->
+  <script type="module">
+    import { State } from "state.js";
+
+    await State.create('app2', {
+      count: 0
+    });
+
+    document.getElementById('add-1-btn').addEventListener('click', (e) => {
+      State.update(e.target, (prev) => {
+        return {
+          count: prev.count + 1
+        };
+      });
+    });
+  </script>
+
+  <div id="app2">
+    <span
+      bind-state="count"
+      to-prop="innerHTML"
+    ></span>
+
+    <span>
+      <button id="add-1-btn">Add 1</button>
+    </span>
+
+    <script type="module">
+      import { State } from "state.js";
+
+      await State.create('clear-btn-span', {
+        clearCount: 0,
+        clearCountLabel: (state) => `Clear ${state.clearCount}`
+      });
+
+      document.getElementById('clear-btn').addEventListener('click', (e) => {
+        State.update(e.target, (prev) => ({
+          count: 0,
+          clearCount: prev.clearCount + 1
+        }));
+      });
+    </script>
+
+    <span id="clear-btn-span">
+      <button
+        id="clear-btn"
+        bind-state="clearCountLabel"
+        to-prop="innerHTML"
+      >
+        Clear
+      </button>
+    </span>
+
+    <div id="top-half"></div>
+    <div id="bottom-half"></div>
+  </div>
+</body>
+</html>
