@@ -20,35 +20,30 @@ class SignalApp extends HTMLElement {
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
+    const shadowRoot = this.attachShadow({ mode: 'open' });
     this.shadowRoot.adoptedStyleSheets = [sheet];
     this.shadowRoot.appendChild(template.content.cloneNode(true));
 
     // Use constructor directly to get immediate access to State instance
-    // this.#state = new State(this.shadowRoot, {
-    //   name: 'World',
-    //   count: (state) => state.name.length
-    // });
-
-    // Update state before ready. Throws error
-    // this.#state.update({ name: 'Signal1' });                // Throws an error because not ready
-    // State.update(this.shadowRoot, { name: 'Signal1' });    // The static update method waits for ready
-
-    // this.#state.ready.then(() => {
-      // State.update(this.shadowRoot, { name: 'Signal2' });
-    // })
-  }
-
-  async connectedCallback() {
-    State.create(this.shadowRoot, {
+    this.#state = new State(shadowRoot, {
       name: 'World',
       count: (state) => state.name.length
-    })
-    .then((state) => {
-      this.#state = state;
     });
 
-    State.update(this.shadowRoot, { name: 'Signal3' });
+    // let update1 = this.#state.update({
+    //   name: 'SignalApp'
+    // });
+    // console.log('update1', update1.name);
+
+    this.#state.ready.then(() => {
+      let updated = this.#state.update((prev) => {
+        console.error('prev:', prev);
+        return {
+          name: 'Signal'
+        }
+      });
+      console.log('updated', updated.name);
+    });
   }
 }
 

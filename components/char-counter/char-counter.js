@@ -19,11 +19,11 @@ export class CharCounter extends HTMLElement {
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
+    const shadowRoot = this.attachShadow({ mode: 'open' });
     this.shadowRoot.adoptedStyleSheets = [sheet];
     this.shadowRoot.innerHTML = template.innerHTML;
 
-    State.create(this.shadowRoot, {
+    State.create(shadowRoot, {
       clearBtnLabel: 'Clear'
     });
 
