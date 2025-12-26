@@ -12,9 +12,7 @@ fetch(new URL('./char-counter.html', import.meta.url))
   .then(html => template.innerHTML = html);
 
 export class CharCounter extends HTMLElement {
-  #state;
   #clearButton;
-  #clearCount = 0;
 
   constructor() {
     super();
@@ -22,31 +20,51 @@ export class CharCounter extends HTMLElement {
     this.shadowRoot.adoptedStyleSheets = [sheet];
     this.shadowRoot.innerHTML = template.innerHTML;
 
-    State.create(shadowRoot, {
-      clearBtnLabel: 'Clear',
-    }).then((state) => {
-      this.#state = state;
-    });
-
-    State.watch(this.shadowRoot, 'clearBtnLabel', (newValue) => {
-      console.timeEnd('Clear Button Clicked - State Update');
-      console.log('CharCounter clearBtnLabel changed to:', newValue);
-    });
-
-    State.watch(this.shadowRoot, 'user.name', (newValue) => {
-      console.log('CharCounter user.name changed. New length:', newValue);
-    });
-
     this.#clearButton = this.shadowRoot.querySelector('#clear-btn');
-    this.#clearButton.addEventListener('click', (e) => {
-      console.time('Clear Button Clicked - State Update');
-      State.update(this.shadowRoot, {
-        user: {
-          name: ''
-        },
-        clearBtnLabel: `Clear ${++this.#clearCount}`
-      });
+    this.#clearButton.addEventListener('click', this.clearBtnClicked.bind(this));
+
+    State.create(this.shadowRoot, {
+      clearCount: 0,
+      clearCountLabel: this.clearCountLabel, // README: computed value functions have to be pure
     });
+
+    State.watch(this.shadowRoot, 'user.name', this.userNameChanged.bind(this));
+
+    State.watch(this.shadowRoot, 'count', this.countChanged.bind(this));
+
+    State.watch(this.shadowRoot, 'clearCount', this.clearCountChanged.bind(this));
+  }
+
+  userNameChanged(newName) {
+    console.log(`CharCounter name: ${newName}`);
+  }
+
+  countChanged(newCount) {
+    let oddEvenTemplateId = newCount % 2 === 0 ? 'even-span-temp' : 'odd-span-temp';
+    let oddEvenTemplate = this.shadowRoot.querySelector(`#${oddEvenTemplateId}`);
+    const oddEvenClone = document.importNode(oddEvenTemplate.content, true);
+    const countSpan = this.shadowRoot.getElementById('odd-even-span');
+    countSpan.innerHTML = '';
+    countSpan.appendChild(oddEvenClone);
+  }
+
+  clearCountChanged(newCount) {
+    console.log(`clearCount: ${newCount}`);
+  }
+
+  // clearCountLabel = (state) => `Clear (${state.clearCount})`;
+  clearCountLabel(state) {
+    console.log('clearCountLabel recomputed', state.clearCount);
+    return `Clear (${state.clearCount})`;
+  }
+
+  clearBtnClicked(e) {
+    State.update(this.shadowRoot, (prev) => ({
+      user: {
+        name: ''
+      },
+      clearCount: prev.clearCount + 1
+    }));
   }
 }
 

@@ -1,6 +1,7 @@
 <p id="char-counter">
   Character count:
   <span
+    id="count-span"
     class="count"
     bind-state="count"
     to-prop="textContent"
@@ -11,9 +12,14 @@
   >
     <button
       id="clear-btn"
-      bind-state="clearBtnLabel"
+      bind-state="clearCountLabel"
       to-prop="innerHTML"
     >
+      Clear
     </button>
   </span>
+  <span id="odd-even-span"></span>
 </p>
+
+<template id="odd-span-temp"><span>Odd</span></template>
+<template id="even-span-temp"><span>Even</span></template>

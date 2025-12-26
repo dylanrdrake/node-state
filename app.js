@@ -2,6 +2,7 @@ import { State } from './lib/state.js';
 import './components/name-input/name-input.js';
 import './components/greeting-display/greeting-display.js';
 import './components/char-counter/char-counter.js';
+import './components/name-history-record/name-history-record.js';
 
 const sheet = new CSSStyleSheet();
 const template = document.createElement('template');
@@ -15,15 +16,9 @@ await fetch(new URL('./app.css', import.meta.url))
   .then(css => sheet.replaceSync(css))
 
 
-const tenThousandNumbers = Array.from({ length: 1000000 }, (_, i) => i);
-const tenThousandStrings = (nums) => nums.map(num => `Item ${num}`);
-const tenThousandObjects = (strings) => strings.map(str => ({ label: str }));
-
-
 class SignalApp extends HTMLElement {
-  #state;
   #testPerfBtn;
-  #testPerfLabel;
+  #historyContainer;
 
   constructor() {
     super();
@@ -31,35 +26,29 @@ class SignalApp extends HTMLElement {
     this.shadowRoot.adoptedStyleSheets = [sheet];
     this.shadowRoot.appendChild(template.content.cloneNode(true));
     this.#testPerfBtn = this.shadowRoot.getElementById('test-perf-btn');
-    this.#testPerfLabel = this.shadowRoot.getElementById('test-perf-label');
+    this.#historyContainer = this.shadowRoot.getElementById('name-history');
 
-    this.#testPerfBtn.addEventListener('click', (e) => {
-      console.time('State Update Propagation');
-      State.update(this.shadowRoot, {
-        numberArr: tenThousandNumbers.reverse()
-      });
-    });
-
-
-    // Use constructor directly to get immediate access to State instance
     State.create(this.shadowRoot, {
       user: {
-        name: 'World'
+        name: 'World',
+        id: 0
       },
       count: (state) => state.user.name.length,
-      numberArr: tenThousandNumbers,
-      stringArr: (state) => tenThousandObjects(tenThousandStrings(state.numberArr)),
     });
 
-    State.watch(this.shadowRoot, 'stringArr', (newValue) => {
-      console.timeEnd('State Update Propagation');
-      let firstFive = newValue.slice(0, 5).map(obj => obj.label);
-      this.#testPerfLabel.textContent = `First 5 items: ${firstFive.join(', ')}`;
+    State.watch(this.shadowRoot, 'user.name', (newValue) => {
+      console.log('App name changed:', newValue);
+      const timestamp = new Date().toLocaleTimeString();
+      const record = document.createElement('name-history-record');
+      record.setAttribute('username', newValue);
+      record.setAttribute('timestamp', ` at ${timestamp}`);
+      this.#historyContainer.prepend(record);
     });
 
-    console.time('State Update Propagation');
-    State.update(this.shadowRoot, {
-      numberArr: tenThousandNumbers.reverse()
+    this.#testPerfBtn.addEventListener('click', () => {
+      State.update(this.shadowRoot, {
+        user: { id: `id-${Date.now()}` }
+      });
     });
   }  
 }

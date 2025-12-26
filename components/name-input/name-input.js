@@ -22,6 +22,10 @@ export class NameInput extends HTMLElement {
 
     this.#input = this.shadowRoot.querySelector('input');
 
+    State.watch(this.shadowRoot, 'user.name', (newValue) => {   
+      console.log('NameInput name:', newValue);
+    });
+
     this.#input.addEventListener('input', async (e) => {
       this.dispatchEvent(new CustomEvent('state-emission', {
         detail: {
