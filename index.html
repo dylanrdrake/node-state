@@ -9,16 +9,19 @@
   <script type="importmap">
     {
       "imports": {
-        "state.js": "./lib/state.js"
+        "state.js": "./lib/state.js",
+        "state_.js": "./lib/state_.js"
       }
     }
+  </script>
+  <script type="module">
+    import './app.js';
   </script>
 </head>
 
 <body>
   <!-- App #1 -->
-  <script type="module" src="app.js"></script>
-  <div id="app"></div>
+  <signal-app></signal-app>
 
   <br />
   <br />

@@ -10,7 +10,6 @@ export class NameHistoryRecord extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    // this.shadowRoot.innerHTML = template.innerHTML;
     this.shadowRoot.appendChild(template.content.cloneNode(true));
   }
 

@@ -9,7 +9,7 @@ const template = document.createElement('template');
 
 await fetch(new URL('./app.html', import.meta.url))
   .then(res => res.text())
-  .then(html => template.innerHTML = html),
+  .then(html => template.innerHTML = html);
 
 await fetch(new URL('./app.css', import.meta.url))
   .then(res => res.text())
@@ -17,6 +17,7 @@ await fetch(new URL('./app.css', import.meta.url))
 
 
 class SignalApp extends HTMLElement {
+  #state;
   #testPerfBtn;
   #historyContainer;
 
@@ -31,33 +32,41 @@ class SignalApp extends HTMLElement {
     State.create(this.shadowRoot, {
       user: {
         name: 'World',
-        id: 0
+        id: 0,
+        address: {
+          street: '123 Main St',
+          city: 'Anytown',
+          state: 'CA',
+          country: 'USA',
+          zip: '12345'
+        }
       },
-      count: (state) => state.user.name.length,
+      changeHistory: [],
+      userNameCount: (state) => state.user.name.length, // README: computed values have to be pure functions
     });
 
-    State.watch(this.shadowRoot, 'user.name', (newValue) => {
-      console.log('App name changed:', newValue);
-      const timestamp = new Date().toLocaleTimeString();
-      const record = document.createElement('name-history-record');
-      record.setAttribute('username', newValue);
-      record.setAttribute('timestamp', ` at ${timestamp}`);
-      this.#historyContainer.prepend(record);
-    });
+    
+    State.watch(this.shadowRoot, 'user.name', async (newName) => {
+      const timestamp = new Date().toLocaleString();
+      await State.update(this.shadowRoot, (prev) => ({
+        user: { 
+          id: Date.now()
+        },
+        changeHistory: [
+          ...prev.changeHistory,
+          {
+            username: newName,
+            timestamp: timestamp
+          }
+        ]
+      }));
 
-    this.#testPerfBtn.addEventListener('click', () => {
-      State.update(this.shadowRoot, {
-        user: { id: `id-${Date.now()}` }
-      });
+      const recordEl = document.createElement('name-history-record');
+      recordEl.setAttribute('username', newName);
+      recordEl.setAttribute('timestamp', timestamp);
+      this.#historyContainer.prepend(recordEl);
     });
   }  
 }
 
 customElements.define('signal-app', SignalApp);
-
-
-// Mount to #app element
-const appRoot = document.getElementById('app');
-if (appRoot) {
-  appRoot.appendChild(document.createElement('signal-app'));
-}
