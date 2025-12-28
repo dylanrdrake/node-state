@@ -1,4 +1,4 @@
-import { State } from "../../lib/state.js";
+import { NodeState } from "../../lib/NodeState.js";
 
 const sheet = new CSSStyleSheet();
 const template = document.createElement('template');
@@ -13,6 +13,7 @@ fetch(new URL('./char-counter.html', import.meta.url))
 
 export class CharCounter extends HTMLElement {
   #clearBtn;
+  #reset;
 
   constructor() {
     super();
@@ -21,13 +22,11 @@ export class CharCounter extends HTMLElement {
     this.shadowRoot.innerHTML = template.innerHTML;
     this.#clearBtn = this.shadowRoot.getElementById('clear-btn');
 
-    this.#clearBtn.addEventListener('click', async () => {
-      State.update(this.shadowRoot, {
-        user: {
-          name: ''
-        }
-      });
+    NodeState.watch(this.shadowRoot, 'hooks.reset', (reset) => {
+      this.#reset = reset;
+      this.#clearBtn.addEventListener('click', this.#reset);
     });
+
   }
 }
 

@@ -1,12 +1,9 @@
-<greeting-display
-    bind-state="user.id"
-    to-attr="userid"
-></greeting-display>
+<greeting-display nstate-user-name-to-attr="username" nstate-user-id-to-attr="userId" nstate-user-to-attr="data-user"></greeting-display>
 <name-input></name-input>
 <char-counter></char-counter>
 
 <button id="test-perf-btn">Test Performance</button>
-<span  bind-state="user.id" to-prop="textContent"></span>
+<span  nstate-user-id-to-prop="textContent"></span>
 
 <br />
 

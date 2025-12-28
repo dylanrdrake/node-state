@@ -9,8 +9,7 @@
   <script type="importmap">
     {
       "imports": {
-        "state.js": "./lib/state.js",
-        "state_.js": "./lib/state_.js"
+        "NodeState.js": "./lib/NodeState.js"
       }
     }
   </script>
@@ -21,21 +20,21 @@
 
 <body>
   <!-- App #1 -->
-  <signal-app></signal-app>
+  <test-app></test-app>
 
   <br />
   <br />
 
   <!-- App #2 -->
   <script type="module">
-    import { State } from "state.js";
+    import { NodeState } from "NodeState.js";
 
-    State.create('app2', {
+    let stateAPI = await NodeState.create('app2', {
       count: 0
     });
 
     document.getElementById('add-1-btn').addEventListener('click', (e) => {
-      State.update(e.target, (prev) => {
+      stateAPI.update((prev) => {
         return {
           count: prev.count + 1
         };
@@ -45,8 +44,7 @@
 
   <div id="app2">
     <span
-      bind-state="count"
-      to-prop="innerHTML"
+      nstate-count-to-prop="innerHTML"
     ></span>
 
     <span>
@@ -54,15 +52,15 @@
     </span>
 
     <script type="module">
-      import { State } from "state.js";
+      import { NodeState } from "NodeState.js";
 
-      State.create('app2-clear-btn-span', {
+      let childStateAPI = await NodeState.create('app2-clear-btn-span', {
         clearCount: 0,
         clearCountLabel: (state) => `Clear ${state.clearCount}`
       });
 
       document.getElementById('app2-clear-btn').addEventListener('click', (e) => {
-        State.update(e.target, (prev) => ({
+        childStateAPI.update((prev) => ({
           count: 0,
           clearCount: prev.clearCount + 1
         }));
@@ -72,18 +70,19 @@
     <span id="app2-clear-btn-span">
       <button
         id="app2-clear-btn"
-        bind-state="clearCountLabel"
-        to-prop="innerHTML"
+        nstate-clearCountLabel-to-prop="innerHTML"
       >
         Clear
       </button>
     </span>
 
-    <div id="top-half" bind-state="count" to-prop="innerHTML"></div>
+
+    <div id="top-half" nstate-count-to-prop="innerHTML"></div>
     <div id="bottom-half"></div>
+
     <script type="module">
-      import { State } from "state.js";
-      State.watch('app2', 'count', (newValue) => {
+      import { NodeState } from "NodeState.js";
+      NodeState.watch('app2', 'count', (newValue) => {
         document.getElementById('bottom-half').textContent = newValue;
       });
     </script>

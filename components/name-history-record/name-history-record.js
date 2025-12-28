@@ -1,4 +1,4 @@
-import { State } from '../../lib/state.js';
+import { NodeState } from '../../lib/NodeState.js';
 
 const template = document.createElement('template');
 
@@ -16,7 +16,8 @@ export class NameHistoryRecord extends HTMLElement {
   connectedCallback() {
     const name = this.getAttribute('username') || '';
     const timestamp = this.getAttribute('timestamp') || '';
-    State.create(this.shadowRoot, {
+
+    NodeState.create(this.shadowRoot, {
       name: name,
       timestamp: timestamp
     });

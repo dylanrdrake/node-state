@@ -1,4 +1,4 @@
-import { State } from '../../lib/state.js';
+import { NodeState } from '../../lib/NodeState.js';
 
 const sheet = new CSSStyleSheet();
 const template = document.createElement('template');
@@ -13,6 +13,7 @@ fetch(new URL('./name-input.html', import.meta.url))
 
 export class NameInput extends HTMLElement {
   #input;
+  #setName;
 
   constructor() {
     super();
@@ -23,12 +24,12 @@ export class NameInput extends HTMLElement {
 
     this.#input = this.shadowRoot.querySelector('input');
 
-    this.#input.addEventListener('input', async (e) => {
-      await State.update(this.shadowRoot, {
-        user: {
-          name: e.target.value
-        }
-      });
+    NodeState.watch(this.shadowRoot, 'hooks.setName', (setName) => {
+      this.#setName = setName;
+    });
+
+    this.#input.addEventListener('input', (e) => {
+      this.#setName(e.target.value);
     });
   }
 }

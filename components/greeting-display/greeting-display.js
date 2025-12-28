@@ -1,4 +1,4 @@
-import { State } from '../../lib/state.js';
+import { NodeState } from '../../lib/NodeState.js';
 
 const sheet = new CSSStyleSheet();
 const template = document.createElement('template');
@@ -12,8 +12,8 @@ fetch(new URL('./greeting-display.html', import.meta.url))
   .then(html => template.innerHTML = html);
 
 export class GreetingDisplay extends HTMLElement {
-  #shadow;
   #state;
+  #shadow;
 
   constructor() {
     super();
@@ -24,27 +24,41 @@ export class GreetingDisplay extends HTMLElement {
     this.#shadow.adoptedStyleSheets = [sheet];
     this.#shadow.appendChild(template.content.cloneNode(true));
 
-    State.create(this.#shadow, {
+    this.#state = new NodeState(this.#shadow, {
       user: {
         name: 'overwrite',
-        id: 0
+        id: 123
       }
-    }).then((stateInstance) => {
-      this.#state = stateInstance;
     });
   }
 
+
   static get observedAttributes() {
-    return ['userid'];
+    return [
+      'username',
+      'userid',
+      'data-user'
+    ];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'userid' && this.#state) {
+    console.log(`Attribute changed: ${name} from ${oldValue} to ${newValue}`);
+    if (name === 'username') {
       this.#state.update({
         user: {
-          id: newValue // propagate the bound attribute value to internal state to get through closed shadowroot
+          name: newValue
         }
       });
+    }
+    if (name === 'userid') {
+      this.#state.update({
+        user: {
+          id: newValue
+        }
+      });
+    }
+    if (name === 'data-user') {
+      console.log('data-user attribute changed:', JSON.parse(newValue));
     }
   }
 
