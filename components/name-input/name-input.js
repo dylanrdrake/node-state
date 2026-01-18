@@ -24,9 +24,7 @@ export class NameInput extends HTMLElement {
 
     this.#input = this.shadowRoot.querySelector('input');
 
-    NodeState.watch(this.shadowRoot, 'hooks.setName', (setName) => {
-      this.#setName = setName;
-    });
+    NodeState.get(this.shadowRoot, 'hooks.setName').then(h => this.#setName = h);
 
     this.#input.addEventListener('input', (e) => {
       this.#setName(e.target.value);

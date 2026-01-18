@@ -48,14 +48,14 @@ class TestApp extends HTMLElement {
       nameCharCount: (state) => state.user.name.length,
 
       hooks: {
-        setName: this.#nameChangeHandler.bind(this),
-        reset: this.#resetHandler.bind(this)
+        setName: this.#nameChangeHook.bind(this),
+        reset: this.#resetHook.bind(this)
       }
     });
   }
 
 
-  #nameChangeHandler(newName) {
+  #nameChangeHook(newName) {
     const timestamp = new Date().toLocaleString();
 
     this.#state.update((prev) => ({
@@ -79,7 +79,7 @@ class TestApp extends HTMLElement {
   }
 
 
-  #resetHandler() {
+  #resetHook() {
     this.#state.update({
       user: {
         name: ''

@@ -22,11 +22,10 @@ export class CharCounter extends HTMLElement {
     this.shadowRoot.innerHTML = template.innerHTML;
     this.#clearBtn = this.shadowRoot.getElementById('clear-btn');
 
-    NodeState.watch(this.shadowRoot, 'hooks.reset', (reset) => {
-      this.#reset = reset;
+    NodeState.get(this.shadowRoot, 'hooks.reset').then((resetHook) => {
+      this.#reset = resetHook;
       this.#clearBtn.addEventListener('click', this.#reset);
     });
-
   }
 }
 

@@ -17,51 +17,19 @@ export class GreetingDisplay extends HTMLElement {
 
   constructor() {
     super();
-    // README: closed shadowRoot will block parent state updates to bindings under this element,
-    // bind parent state to [to-attr] of this element and use observedAttributes + attributeChangedCallback to get through
-    // and you can direct update dom elements or use an internal state instance and bindings
     this.#shadow = this.attachShadow({ mode: 'closed' }); 
     this.#shadow.adoptedStyleSheets = [sheet];
     this.#shadow.appendChild(template.content.cloneNode(true));
 
+    // README: closed shadowRoot will block parent state updates to bindings under this element,
+    // so we need to create a new NodeState instance and watcher here to tunnel updates through.
     this.#state = new NodeState(this.#shadow, {
-      user: {
-        name: 'overwrite',
-        id: 123
-      }
+      name: 'overwrite',
+      id: 123
     });
+
+    NodeState.watch(this.#shadow, 'user', this.#state.update);
   }
-
-
-  static get observedAttributes() {
-    return [
-      'username',
-      'userid',
-      'data-user'
-    ];
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    console.log(`Attribute changed: ${name} from ${oldValue} to ${newValue}`);
-    if (name === 'username') {
-      this.#state.update({
-        user: {
-          name: newValue
-        }
-      });
-    }
-    if (name === 'userid') {
-      this.#state.update({
-        user: {
-          id: newValue
-        }
-      });
-    }
-    if (name === 'data-user') {
-      console.log('data-user attribute changed:', JSON.parse(newValue));
-    }
-  }
-
 }
 
 customElements.define('greeting-display', GreetingDisplay);
