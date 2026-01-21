@@ -2,18 +2,6 @@ import { NodeState as N$ } from './lib/NodeState.js';
 import './components/work-space.js';
 import './components/log-history.js';
 
-// const sheet = new CSSStyleSheet();
-// const template = document.createElement('template');
-
-// await fetch(new URL('./app.html', import.meta.url))
-//   .then(res => res.text())
-//   .then(html => template.innerHTML = html);
-
-// await fetch(new URL('./app.css', import.meta.url))
-//   .then(res => res.text())
-//   .then(css => sheet.replaceSync(css))
-
-
 const CSS = String.raw;
 const HTML = String.raw;
 
@@ -43,24 +31,23 @@ const html = HTML`
   <log-history></log-history>
 `;
 
-const sheet = new CSSStyleSheet();
-sheet.replaceSync(styles);
 const template = document.createElement('template');
 template.innerHTML = html;
+const sheet = new CSSStyleSheet();
+sheet.replaceSync(styles);
 
 
 class TestApp extends HTMLElement {
+  #shadow;
   #state;
 
   constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: 'closed' });
-    this.shadow.adoptedStyleSheets = [sheet];
-    this.shadow.appendChild(template.content.cloneNode(true));
+    this.#shadow = this.attachShadow({ mode: 'closed' });
+    this.#shadow.adoptedStyleSheets = [sheet];
+    this.#shadow.appendChild(template.content.cloneNode(true));
 
-      // README: have to use reference to the shadow DOM when
-    // using closed mode so that NodeState can access it
-    this.#state = N$.create(this.shadow, {
+    this.#state = N$.create(this.#shadow, {
       config: {
         logUpdates: false
       },
@@ -73,7 +60,7 @@ class TestApp extends HTMLElement {
           city: 'Anytown',
           state: 'CA',
           country: 'USA',
-          zip: '12345'
+          zip: '39507'
         }
       },
 
@@ -88,7 +75,10 @@ class TestApp extends HTMLElement {
         deleteItem: this.#deleteItemHook.bind(this),
         clearItems: this.#clearItems.bind(this)
       }
-    })
+    });
+  
+    // README: have to use reference to the shadow DOM when
+    // using closed mode so that NodeState can access it
   }
 
   #addItemHook = () => {
@@ -145,3 +135,16 @@ class TestApp extends HTMLElement {
 }
 
 customElements.define('test-app', TestApp);
+
+
+// const sheet = new CSSStyleSheet();
+// const template = document.createElement('template');
+
+// await fetch(new URL('./app.html', import.meta.url))
+//   .then(res => res.text())
+//   .then(html => template.innerHTML = html);
+
+// await fetch(new URL('./app.css', import.meta.url))
+//   .then(res => res.text())
+//   .then(css => sheet.replaceSync(css))
+

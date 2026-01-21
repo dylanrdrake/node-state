@@ -7,7 +7,7 @@ const HTML = String.raw;
 const styles = CSS`
   :host {
   }
-`
+`;
 
 const html = HTML`
   <button id="add-btn">Add</button>
@@ -34,7 +34,9 @@ class SideBar extends HTMLElement {
     this.#addBtn = this.shadowRoot.getElementById('add-btn');
     this.#clearBtn = this.shadowRoot.getElementById('clear-btn');
 
-    N$.get(this.shadowRoot, 'user.address.zipp').then(zipp => console.log('zipp', zipp));
+    N$.get(this.shadowRoot, 'user.address.zipp').then(zipp => {
+      console.log('zipp', zipp);
+    });
 
     N$.get(this.shadowRoot, 'hooks.clearItems').then(clearItems => {
       this.#clearBtn.addEventListener('click', clearItems);
