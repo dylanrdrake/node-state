@@ -10,27 +10,37 @@ const styles = CSS`
   :host {
     display: flex;
     flex-direction: row;
-
-    & side-bar {
-      border-right: 2px solid gray;
-      min-width: 30%;
-    }
-
-    & work-view {
-      flex-grow: 1;
-    }
+  }
+  :host #divider {
+    width: 5px;
+    background-color: gray;
+    cursor: col-resize;
+  }
+  :host #side-bar-container {
+    width: 30%;
+    overflow-x: hidden;
+    border-right: 2px solid gray;
+  }
+  :host side-bar {
+    display: block;
+    min-width: 30vw;
+  }
+  :host work-view {
+    flex-grow: 1;
   }
 `
 
-const html = HTML`
-  <side-bar></side-bar>
+const template = document.createElement('template');
+template.innerHTML = HTML`
+  <div id="side-bar-container">
+    <side-bar></side-bar>
+  </div>
+  <div id="divider"></div>
   <work-view></work-view>
 `;
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(styles);
-const template = document.createElement('template');
-template.innerHTML = html;
 
 
 class Workspace extends HTMLElement {
@@ -40,6 +50,37 @@ class Workspace extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.appendChild(template.content.cloneNode(true));
     this.shadowRoot.adoptedStyleSheets = [sheet];
+
+    this.divider = this.shadowRoot.getElementById('divider');
+    this.sideBarContainer = this.shadowRoot.getElementById('side-bar-container');
+    
+    this.isDragging = false;
+    
+    this.divider.addEventListener('mousedown', this.onMouseDown.bind(this));
+    document.addEventListener('mousemove', this.onMouseMove.bind(this));
+    document.addEventListener('mouseup', this.onMouseUp.bind(this));
+  }
+
+  onMouseDown(e) {
+    this.isDragging = true;
+    e.preventDefault();
+  }
+
+  onMouseMove(e) {
+    if (!this.isDragging) return;
+    
+    const containerRect = this.getBoundingClientRect();
+    const newWidth = e.clientX - containerRect.left;
+    const minWidth = 10;
+    const maxWidth = containerRect.width - 150;
+    
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      this.sideBarContainer.style.width = `${newWidth}px`;
+    }
+  }
+
+  onMouseUp() {
+    this.isDragging = false;
   }
 
 }

@@ -25,29 +25,30 @@ const styles = CSS`
     }
   }
 `
-
-const html = HTML`
-  <work-space></work-space>
-  <log-history></log-history>
-`;
-
-const template = document.createElement('template');
-template.innerHTML = html;
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(styles);
 
 
+const template = document.createElement('template');
+template.innerHTML = HTML`
+  <work-space></work-space>
+  <log-history></log-history>
+`;
+
+
+  
 class TestApp extends HTMLElement {
-  #shadow;
   #state;
 
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: 'closed' });
-    this.#shadow.adoptedStyleSheets = [sheet];
-    this.#shadow.appendChild(template.content.cloneNode(true));
+    const shadow = this.attachShadow({ mode: 'closed' });
+    shadow.appendChild(template.content.cloneNode(true));
+    shadow.adoptedStyleSheets = [sheet];
 
-    this.#state = N$.create(this.#shadow, {
+    // README: have to use reference to the shadow DOM when
+    // using closed mode so that NodeState can access it
+    this.#state = N$.create(shadow, {
       config: {
         logUpdates: false
       },
@@ -69,16 +70,12 @@ class TestApp extends HTMLElement {
       itemCount: (state) => state.items.length,
 
       log: [],
-
-      hooks: {
-        addItem: this.#addItemHook.bind(this),
-        deleteItem: this.#deleteItemHook.bind(this),
-        clearItems: this.#clearItems.bind(this)
-      }
+    },
+    {
+      addItem: this.#addItemHook.bind(this),
+      deleteItem: this.#deleteItemHook.bind(this),
+      clearItems: this.#clearItems.bind(this)
     });
-  
-    // README: have to use reference to the shadow DOM when
-    // using closed mode so that NodeState can access it
   }
 
   #addItemHook = () => {

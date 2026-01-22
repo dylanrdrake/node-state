@@ -1,4 +1,5 @@
 import { NodeState as N$ } from '../lib/NodeState.js';
+import { WorkItem } from '../components/work-item.js';
 
 
 const CSS = String.raw;
@@ -12,28 +13,14 @@ const styles = CSS`
     gap: 1vh;
     align-content: flex-start;
     overflow-y: auto;
-
-    & .item-box {
-      height: 50px;
-      width: 50px;
-      background-color: steelblue;
-      font-size: 14px;
-      color: white;
-      word-wrap: break-word;
-      &:hover {
-        filter: brightness(75%);
-        cursor: pointer;
-      }
-    }
   }
 `
 
-const html = HTML``;
+const template = document.createElement('template');
+template.innerHTML = HTML``;
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(styles);
-const template = document.createElement('template');
-template.innerHTML = html;
 
 
 class WorkView extends HTMLElement {
@@ -45,15 +32,15 @@ class WorkView extends HTMLElement {
     this.shadowRoot.appendChild(template.content.cloneNode(true));
     this.shadowRoot.adoptedStyleSheets = [sheet];
 
-    N$.get(this.shadowRoot, 'hooks.deleteItem').then(deleteItem => {
+    N$.get(this.shadowRoot, 'deleteItem').then(deleteItem => {
       this.#deleteItem = deleteItem;
     });
 
     N$.watch(this, 'items', (items) => {
       let itemEls = items.map(item => {
-        let el = document.createElement('div');
-        el.className = 'item-box';
-        el.innerHTML = item.id;
+        let el = new WorkItem({
+          id: item.id
+        });
         el.addEventListener('click', this.#deleteItem.bind(this, item.id));
         return el;
       });

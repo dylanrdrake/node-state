@@ -1,4 +1,5 @@
 import { NodeState as N$ } from '../lib/NodeState.js';
+import { LogEntry } from './log-entry.js';
 
 
 const CSS = String.raw;
@@ -10,13 +11,12 @@ const styles = CSS`
   }
 `
 
-const html = HTML`
-`;
+const template = document.createElement('template');
+template.innerHTML = HTML``;
+
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(styles);
-const template = document.createElement('template');
-template.innerHTML = html;
 
 
 class LogHistory extends HTMLElement {
@@ -28,11 +28,7 @@ class LogHistory extends HTMLElement {
     this.shadowRoot.adoptedStyleSheets = [sheet];
 
     N$.watch(this, 'log', (logEntries) => {
-      let logEls = logEntries.map(entry => {
-        let el = document.createElement('div');
-        el.textContent = `${entry.user.name} ${entry.message}`;
-        return el;
-      });
+      let logEls = logEntries.map(entry => new LogEntry(entry));
       this.shadowRoot.replaceChildren(...logEls);
     });
   }
