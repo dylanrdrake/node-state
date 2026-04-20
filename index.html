@@ -3,42 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test App</title>
-
-  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-
-  <!-- has to be loaded before app.js to work as a
-       higher state for any getters/watchers from child nodes.
-       Won't setup event listeners in time if not
-  -->
-  <script type="module">
-    import { FlowState } from './lib/FlowState.js'
-    let bodyEl = document.querySelector('body')
-    let state = FlowState.create(bodyEl, {
-      testValue: 123,
-      user: {
-        address: {
-          zipp: 12345
-        }
-      }
-    })
-  </script>
-
-  <script type="module">
-    import './app.js';
-  </script>
-
+  <title>Todos — FlowState Demo</title>
+  <!-- <script type="module" src="./apps/todo/todo-app.js"></script>
+  <script type="module" src="./apps/budget/budget-app.js"></script> -->
+  <script type="module" src="./apps/calendar/calendar-app.js"></script>
   <style>
-    body, html {
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
-      width: 100%;
+      min-height: 100vh;
+      background: #f9fafb;
     }
   </style>
 </head>
-
 <body>
-  <test-app></test-app>
+  <!-- <todo-app></todo-app> -->
+  <!-- <budget-app></budget-app> -->
+  <calendar-app></calendar-app>
 </body>
 </html>
