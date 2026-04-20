@@ -44,6 +44,7 @@ sheet.replaceSync(styles);
 
 
 class Workspace extends HTMLElement {
+  minWidth = 10;
  
   constructor() {
     super();
@@ -70,12 +71,10 @@ class Workspace extends HTMLElement {
     if (!this.isDragging) return;
     
     const containerRect = this.getBoundingClientRect();
-    const newWidth = e.clientX - containerRect.left;
-    const minWidth = 10;
     const maxWidth = containerRect.width - 150;
     
-    if (newWidth >= minWidth && newWidth <= maxWidth) {
-      this.sideBarContainer.style.width = `${newWidth}px`;
+    if (e.clientX >= this.minWidth && e.clientX <= maxWidth) {
+      this.sideBarContainer.style.width = `${e.clientX}px`;
     }
   }
 
