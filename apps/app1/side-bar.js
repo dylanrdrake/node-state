@@ -7,6 +7,8 @@ const styles = CSS`
   :host {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
   }
 
   :host #work-items-container .work-item,
@@ -31,8 +33,10 @@ const styles = CSS`
 const template = document.createElement('template');
 template.innerHTML = HTML`
   <div id="work-items-container"></div>
-  <div><b>Recent:</b></div>
-  <div id="work-history"></div>
+  <div>
+    <div><b>Recent:</b></div>
+    <div id="work-history"></div>
+  </div>
 `;
 
 const sheet = new CSSStyleSheet();
@@ -41,6 +45,7 @@ sheet.replaceSync(styles);
 class SideBar extends HTMLElement {
   #state;
   #selectWorkItem;
+  #selectedWorkItem;
   #workItemsContainer;
   #workHistoryContainer;
 
@@ -77,6 +82,13 @@ class SideBar extends HTMLElement {
     workItems.forEach((item) => {
       const div = document.createElement('div');
       div.textContent = item.name;
+      div.setAttribute('data-work-item-id', item.id);
+      if (this.#selectedWorkItem && item.id === this.#selectedWorkItem.id) {
+        div.classList.add('selected');
+      }
+      else {
+        div.classList.remove('selected');
+      }
       div.classList.add('work-item');
       div.addEventListener('click', () => this.#selectWorkItem(item));
       this.#workItemsContainer.appendChild(div);
@@ -85,8 +97,12 @@ class SideBar extends HTMLElement {
 
 
   #workItemSelected(workItem) {
+    this.#selectedWorkItem = workItem;
     if (workItem) {
-      this.#state.update((prev) => ({ history: [workItem, ...(prev.history || [])] }));
+      this.#state.update((prev) => {
+        const newHistory = [workItem, ...prev.history.filter(item => item.id !== workItem.id)];
+        return { history: newHistory };
+      });
     }
     this.#visuallySelectWorkItem(workItem);
   }
@@ -95,7 +111,8 @@ class SideBar extends HTMLElement {
   #visuallySelectWorkItem(workItem) {
     const workItemElements = this.#workItemsContainer.querySelectorAll('.work-item');
     workItemElements.forEach((el) => {
-      if (workItem && el.textContent === workItem.name) {
+      const workItemId = parseInt(el.getAttribute('data-work-item-id'));
+      if (workItem && workItemId === workItem.id) {
         el.classList.add('selected');
       } else {
         el.classList.remove('selected');
@@ -113,6 +130,7 @@ class SideBar extends HTMLElement {
       const div = document.createElement('div');
       div.textContent = item.name;
       div.classList.add('work-item');
+      div.setAttribute('data-work-item-id', item.id);
       div.addEventListener('click', () => this.#selectWorkItem(item));
       this.#workHistoryContainer.appendChild(div);
     });

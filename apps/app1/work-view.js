@@ -40,6 +40,7 @@ class WorkView extends HTMLElement {
   #saveBtn;
   #closeBtn;
   #saveWorkItem;
+  #selectWorkItem;
 
   constructor() {
     super();
@@ -55,6 +56,7 @@ class WorkView extends HTMLElement {
     this.#closeBtn = this.shadowRoot.getElementById('close-btn');
 
     Flow.get(this.shadowRoot, 'saveWorkItem', (fn) => this.#saveWorkItem = fn);
+    Flow.get(this.shadowRoot, 'selectWorkItem', (fn) => this.#selectWorkItem = fn);
 
     this.#saveBtn.addEventListener('click', () => {
       if (this.#saveWorkItem) {
@@ -66,6 +68,7 @@ class WorkView extends HTMLElement {
     this.#closeBtn.addEventListener('click', () => {
       this.selectedWorkItem = null;
       this.#state.update({ edits: {} });
+      this.#selectWorkItem(null);
     });
 
     this.#state = Flow.create(this.shadowRoot, {
@@ -89,6 +92,10 @@ class WorkView extends HTMLElement {
     Object.entries(workItem).forEach(([key, value]) => {
       let input = document.createElement('input');
       input.value = value;
+      if (key === 'id') {
+        input.setAttribute('disabled', '');
+        input.setAttribute('readonly', '');
+      }
       this.#editorFields.appendChild(input);
       input.addEventListener('input', (e) => {
         let value = e.target.value;

@@ -21,7 +21,6 @@ const styles = CSS`
     border-right: 2px solid gray;
   }
   :host side-bar {
-    display: block;
     min-width: 30vw;
   }
   :host work-view {
