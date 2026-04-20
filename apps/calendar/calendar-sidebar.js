@@ -126,6 +126,10 @@ const styles = CSS`
     transition: background 0.15s;
   }
   .add-btn:hover { background: #4f46e5; }
+  .add-btn:disabled {
+    background: #c7d2fe;
+    cursor: not-allowed;
+  }
 `;
 
 const sheet = new CSSStyleSheet();
@@ -142,7 +146,12 @@ template.innerHTML = HTML`
     <p id="no-events">No events</p>
   </div>
   <div class="form">
-    <input id="title-input" type="text" placeholder="Event title…">
+    <input
+      id="title-input"
+      type="text"
+      placeholder="Event title…"
+      flow-watch-eventInputValue-to-prop="value"
+    />
     <div class="color-row" id="color-row">${swatchesHTML}</div>
     <button class="add-btn" type="button">Add Event</button>
   </div>
@@ -150,6 +159,7 @@ template.innerHTML = HTML`
 
 
 export class CalendarSidebar extends HTMLElement {
+  #state;
   #dateHeading;
   #eventsList;
   #noEvents;
@@ -174,6 +184,15 @@ export class CalendarSidebar extends HTMLElement {
     this.#colorRow    = shadow.getElementById('color-row');
     this.#addBtn      = shadow.querySelector('.add-btn');
 
+    this.#state = Flow.create(shadow, {
+      eventInputValue: ''
+    });
+
+    Flow.watch(shadow, 'eventInputValue', (value) => {
+      if (value.length > 0) this.#addBtn.removeAttribute('disabled');
+      else this.#addBtn.setAttribute('disabled', '');
+    });
+
     Flow.get(this, 'addEvent').then(fn => { this.#addEvent = fn; });
     Flow.get(this, 'deleteEvent').then(fn => { this.#deleteEvent = fn; });
 
@@ -188,13 +207,16 @@ export class CalendarSidebar extends HTMLElement {
 
     this.#addBtn.addEventListener('click', () => this.#submit());
     this.#titleInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') this.#submit(); });
+    this.#titleInput.addEventListener('input', (e) => {
+      this.#state.update({ eventInputValue: e.target.value });
+    });
   }
 
   #submit() {
-    const title = this.#titleInput.value.trim();
+    const title = this.#state.get('eventInputValue').trim();
     if (!title || !this.#currentDate) return;
     this.#addEvent?.({ title, color: this.#selectedColor, date: this.#currentDate });
-    this.#titleInput.value = '';
+    this.#state.update({ eventInputValue: '' });
   }
 
   set selectedDate(date) {
