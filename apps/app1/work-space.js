@@ -1,7 +1,6 @@
-import { FlowState as Flow } from '../lib/FlowState.js';
+import { FlowState as Flow } from '../../lib/FlowState.js';
 import './side-bar.js';
 import './work-view.js';
-
 
 const CSS = String.raw;
 const HTML = String.raw;
@@ -44,6 +43,7 @@ sheet.replaceSync(styles);
 
 
 class Workspace extends HTMLElement {
+  #state;
   minWidth = 10;
  
   constructor() {
@@ -54,20 +54,37 @@ class Workspace extends HTMLElement {
 
     this.divider = this.shadowRoot.getElementById('divider');
     this.sideBarContainer = this.shadowRoot.getElementById('side-bar-container');
-    
+    this.workView = this.shadowRoot.querySelector('work-view');
     this.isDragging = false;
     
-    this.divider.addEventListener('mousedown', this.onMouseDown.bind(this));
-    document.addEventListener('mousemove', this.onMouseMove.bind(this));
-    document.addEventListener('mouseup', this.onMouseUp.bind(this));
+    this.divider.addEventListener('mousedown', this.#onMouseDown.bind(this));
+    document.addEventListener('mousemove', this.#onMouseMove.bind(this));
+    document.addEventListener('mouseup', this.#onMouseUp.bind(this));
+
+    this.#state = Flow.create(this.shadowRoot, {
+      workItems: null,
+      selectedWorkItem: null
+    }, {
+      selectWorkItem: this.#selectWorkItemHook.bind(this),
+      saveWorkItem: this.#saveWorkItem.bind(this)
+    });
+
+    this.#state.update({
+      workItems: [
+        { id: 1, name: 'Work Item 1' },
+        { id: 2, name: 'Work Item 2' },
+        { id: 3, name: 'Work Item 3' },
+        { id: 4, name: 'Work Item 4' },
+      ]
+    });
   }
 
-  onMouseDown(e) {
+  #onMouseDown(e) {
     this.isDragging = true;
     e.preventDefault();
   }
 
-  onMouseMove(e) {
+  #onMouseMove(e) {
     if (!this.isDragging) return;
     
     const containerRect = this.getBoundingClientRect();
@@ -78,8 +95,29 @@ class Workspace extends HTMLElement {
     }
   }
 
-  onMouseUp() {
+  #onMouseUp() {
     this.isDragging = false;
+  }
+
+  #selectWorkItemHook(workItem) {
+    this.#state.update({ selectedWorkItem: workItem });
+    this.workView.selectedWorkItem = workItem;
+  }
+
+  #saveWorkItem(edits) {
+    this.#state.update((state) => {
+      let updatedItem = { ...state.selectedWorkItem, ...edits };
+      const updatedWorkItems = state.workItems.map(item => {
+        if (item.id === state.selectedWorkItem.id) {
+          return updatedItem;
+        }
+        return item;
+      });
+      return {
+        workItems: updatedWorkItems,
+        selectedWorkItem: updatedItem
+      };
+    });
   }
 
 }
