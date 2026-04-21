@@ -3,6 +3,7 @@ import './work-space.js';
 
 Flow.devtools();
 
+
 const CSS = String.raw;
 const HTML = String.raw;
 
@@ -20,8 +21,7 @@ const appCSS = CSS`
 const appSheet = new CSSStyleSheet();
 appSheet.replaceSync(appCSS);
 
-// flow-watch-{key}-to-prop bindings set properties on budget-summary-card elements.
-// The value passed is the computed object { total, count, label }.
+
 const appTemplate = document.createElement('template');
 appTemplate.innerHTML = HTML`
   <work-space></work-space>

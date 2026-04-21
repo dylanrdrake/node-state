@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App 1</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/light/main.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "@arcgis/core/": "https://js.arcgis.com/4.32/@arcgis/core/"
+      }
+    }
+  </script>
+  <script type="module" src="https://js.arcgis.com/map-components/4.32/arcgis-map-components.esm.js"></script>
+  <script type="module" src="./app.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #f9fafb;
+    }
+  </style>
+</head>
+<body>
+  <app-1></app-1>
+</body>
+</html>
