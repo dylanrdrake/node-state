@@ -185,7 +185,9 @@ export class CalendarSidebar extends HTMLElement {
     this.#addBtn      = shadow.querySelector('.add-btn');
 
     this.#state = Flow.create(shadow, {
-      eventInputValue: ''
+      init: {
+        eventInputValue: ''
+      }
     });
 
     Flow.watch(shadow, 'eventInputValue', (value) => {

@@ -124,11 +124,12 @@ class SideBar extends HTMLElement {
     Flow.watch(this.shadowRoot, 'workItems', this.#renderWorkItems.bind(this));
 
     this.#state = Flow.create(this.shadowRoot, {
-      history: [],
-    },
-    undefined,
-    {
-      label: 'SideBar'
+      init: {
+        history: [],
+      },
+      options: {
+        label: 'SideBar'
+      }
     });
 
     Flow.watch(this.shadowRoot, 'history', this.#renderWorkHistory.bind(this));

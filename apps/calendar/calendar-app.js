@@ -68,64 +68,69 @@ class CalendarApp extends HTMLElement {
     shadow.adoptedStyleSheets = [sheet];
 
     this.#state = Flow.create(this, {
+      init: {
 
-      today,
-      viewYear:     now.getFullYear(),
-      viewMonth:    now.getMonth(),
-      selectedDate: today,
-      events:       seedEvents,
+        today,
+        viewYear:     now.getFullYear(),
+        viewMonth:    now.getMonth(),
+        selectedDate: today,
+        events:       seedEvents,
 
-      // --- Computed values ---
+        monthLabel: (s) =>
+          new Date(s.viewYear, s.viewMonth).toLocaleDateString('en-US', {
+            month: 'long', year: 'numeric',
+          }),
 
-      monthLabel: (s) =>
-        new Date(s.viewYear, s.viewMonth).toLocaleDateString('en-US', {
-          month: 'long', year: 'numeric',
-        }),
+        // 42-cell (6×7) grid: prev-month overflow, current month, next-month overflow.
+        // Each cell carries the date string, display flags, and event dot colors.
+        calendarDays: (s) => {
+          const { viewYear: yr, viewMonth: mo } = s;
+          const firstDayOfWeek = new Date(yr, mo, 1).getDay();
+          const daysInMonth    = new Date(yr, mo + 1, 0).getDate();
+          const days           = [];
 
-      // 42-cell (6×7) grid: prev-month overflow, current month, next-month overflow.
-      // Each cell carries the date string, display flags, and event dot colors.
-      calendarDays: (s) => {
-        const { viewYear: yr, viewMonth: mo } = s;
-        const firstDayOfWeek = new Date(yr, mo, 1).getDay();
-        const daysInMonth    = new Date(yr, mo + 1, 0).getDate();
-        const days           = [];
+          // Prev-month overflow (day 0 = last day of prev month, day -1 = second-to-last, …)
+          for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+            days.push({ date: localDate(new Date(yr, mo, -i)), overflow: true, isToday: false, isSelected: false, dots: [] });
+          }
 
-        // Prev-month overflow (day 0 = last day of prev month, day -1 = second-to-last, …)
-        for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-          days.push({ date: localDate(new Date(yr, mo, -i)), overflow: true, isToday: false, isSelected: false, dots: [] });
-        }
+          // Current month
+          for (let n = 1; n <= daysInMonth; n++) {
+            const date         = localDate(new Date(yr, mo, n));
+            const eventsOnDay  = s.events.filter(e => e.date === date);
+            days.push({
+              date,
+              overflow:   false,
+              isToday:    date === s.today,
+              isSelected: date === s.selectedDate,
+              dots:       eventsOnDay.slice(0, 3).map(e => e.color),
+            });
+          }
 
-        // Current month
-        for (let n = 1; n <= daysInMonth; n++) {
-          const date         = localDate(new Date(yr, mo, n));
-          const eventsOnDay  = s.events.filter(e => e.date === date);
-          days.push({
-            date,
-            overflow:   false,
-            isToday:    date === s.today,
-            isSelected: date === s.selectedDate,
-            dots:       eventsOnDay.slice(0, 3).map(e => e.color),
-          });
-        }
+          // Next-month overflow to reach exactly 42 cells
+          const remaining = 42 - days.length;
+          for (let n = 1; n <= remaining; n++) {
+            days.push({ date: localDate(new Date(yr, mo + 1, n)), overflow: true, isToday: false, isSelected: false, dots: [] });
+          }
 
-        // Next-month overflow to reach exactly 42 cells
-        const remaining = 42 - days.length;
-        for (let n = 1; n <= remaining; n++) {
-          days.push({ date: localDate(new Date(yr, mo + 1, n)), overflow: true, isToday: false, isSelected: false, dots: [] });
-        }
+          return days;
+        },
 
-        return days;
+        selectedDayEvents: (s) => s.events.filter(e => e.date === s.selectedDate),
+
       },
 
-      selectedDayEvents: (s) => s.events.filter(e => e.date === s.selectedDate),
+      hooks: {
 
-    }, {
-      prevMonth:   this.#prevMonth.bind(this),
-      nextMonth:   this.#nextMonth.bind(this),
-      goToday:     this.#goToday.bind(this),
-      selectDate:  this.#selectDate.bind(this),
-      addEvent:    this.#addEvent.bind(this),
-      deleteEvent: this.#deleteEvent.bind(this),
+        prevMonth:   this.#prevMonth.bind(this),
+        nextMonth:   this.#nextMonth.bind(this),
+        goToday:     this.#goToday.bind(this),
+        selectDate:  this.#selectDate.bind(this),
+        addEvent:    this.#addEvent.bind(this),
+        deleteEvent: this.#deleteEvent.bind(this),
+
+      }
+
     });
 
     // Let FlowState pierce the closed shadow to find flow-watch attributes

@@ -202,61 +202,64 @@ class BudgetApp extends HTMLElement {
     this.#emptyMsg  = shadow.getElementById('empty-msg');
 
     this.#state = Flow.create(this, {
+      init: {
 
-      transactions: [
-        { id: 1,  description: 'Monthly salary',    amount: 4200,  type: 'income',  category: 'Work',         date: agoDays(14) },
-        { id: 2,  description: 'Rent',              amount: 1350,  type: 'expense', category: 'Housing',      date: agoDays(13) },
-        { id: 3,  description: 'Grocery run',       amount: 134.5, type: 'expense', category: 'Food',         date: agoDays(10) },
-        { id: 4,  description: 'Freelance project', amount: 950,   type: 'income',  category: 'Work',         date: agoDays(8)  },
-        { id: 5,  description: 'Electricity bill',  amount: 92,    type: 'expense', category: 'Utilities',    date: agoDays(7)  },
-        { id: 6,  description: 'Dinner out',        amount: 67,    type: 'expense', category: 'Food',         date: agoDays(5)  },
-        { id: 7,  description: 'Gym membership',    amount: 45,    type: 'expense', category: 'Health',       date: agoDays(4)  },
-        { id: 8,  description: 'Dividend payout',   amount: 310,   type: 'income',  category: 'Investments',  date: agoDays(2)  },
-        { id: 9,  description: 'Internet bill',     amount: 60,    type: 'expense', category: 'Utilities',    date: agoDays(1)  },
-        { id: 10, description: 'Coffee & snacks',   amount: 28.5,  type: 'expense', category: 'Food',         date: agoDays(0)  },
-      ],
+        transactions: [
+          { id: 1,  description: 'Monthly salary',    amount: 4200,  type: 'income',  category: 'Work',         date: agoDays(14) },
+          { id: 2,  description: 'Rent',              amount: 1350,  type: 'expense', category: 'Housing',      date: agoDays(13) },
+          { id: 3,  description: 'Grocery run',       amount: 134.5, type: 'expense', category: 'Food',         date: agoDays(10) },
+          { id: 4,  description: 'Freelance project', amount: 950,   type: 'income',  category: 'Work',         date: agoDays(8)  },
+          { id: 5,  description: 'Electricity bill',  amount: 92,    type: 'expense', category: 'Utilities',    date: agoDays(7)  },
+          { id: 6,  description: 'Dinner out',        amount: 67,    type: 'expense', category: 'Food',         date: agoDays(5)  },
+          { id: 7,  description: 'Gym membership',    amount: 45,    type: 'expense', category: 'Health',       date: agoDays(4)  },
+          { id: 8,  description: 'Dividend payout',   amount: 310,   type: 'income',  category: 'Investments',  date: agoDays(2)  },
+          { id: 9,  description: 'Internet bill',     amount: 60,    type: 'expense', category: 'Utilities',    date: agoDays(1)  },
+          { id: 10, description: 'Coffee & snacks',   amount: 28.5,  type: 'expense', category: 'Food',         date: agoDays(0)  },
+        ],
 
-      filter: 'all',
-      sort: 'date-desc',
+        filter: 'all',
+        sort: 'date-desc',
 
-      // --- Computed values ---
+        // --- Computed values ---
 
-      // Objects consumed by budget-summary-card's `amount` setter
-      balanceSummary: (s) => ({
-        total: s.transactions.reduce((sum, t) => t.type === 'income' ? sum + t.amount : sum - t.amount, 0),
-        count: s.transactions.length,
-        label: 'transactions total',
-      }),
+        // Objects consumed by budget-summary-card's `amount` setter
+        balanceSummary: (s) => ({
+          total: s.transactions.reduce((sum, t) => t.type === 'income' ? sum + t.amount : sum - t.amount, 0),
+          count: s.transactions.length,
+          label: 'transactions total',
+        }),
 
-      incomeSummary: (s) => {
-        const txs = s.transactions.filter(t => t.type === 'income');
-        return { total: txs.reduce((sum, t) => sum + t.amount, 0), count: txs.length, label: 'income entries' };
+        incomeSummary: (s) => {
+          const txs = s.transactions.filter(t => t.type === 'income');
+          return { total: txs.reduce((sum, t) => sum + t.amount, 0), count: txs.length, label: 'income entries' };
+        },
+
+        expenseSummary: (s) => {
+          const txs = s.transactions.filter(t => t.type === 'expense');
+          return { total: txs.reduce((sum, t) => sum + t.amount, 0), count: txs.length, label: 'expense entries' };
+        },
+
+        // Filtered + sorted slice of transactions for the list view
+        filteredTransactions: (s) => {
+          let txs = s.filter === 'all'
+            ? s.transactions
+            : s.transactions.filter(t => t.type === s.filter);
+
+          return [...txs].sort((a, b) => {
+            switch (s.sort) {
+              case 'date-asc':    return new Date(a.date) - new Date(b.date);
+              case 'amount-desc': return b.amount - a.amount;
+              case 'amount-asc':  return a.amount - b.amount;
+              default:            return new Date(b.date) - new Date(a.date);
+            }
+          });
+        },
+
       },
-
-      expenseSummary: (s) => {
-        const txs = s.transactions.filter(t => t.type === 'expense');
-        return { total: txs.reduce((sum, t) => sum + t.amount, 0), count: txs.length, label: 'expense entries' };
+      hooks: {
+        addTransaction:    this.#addTransaction.bind(this),
+        deleteTransaction: this.#deleteTransaction.bind(this),
       },
-
-      // Filtered + sorted slice of transactions for the list view
-      filteredTransactions: (s) => {
-        let txs = s.filter === 'all'
-          ? s.transactions
-          : s.transactions.filter(t => t.type === s.filter);
-
-        return [...txs].sort((a, b) => {
-          switch (s.sort) {
-            case 'date-asc':    return new Date(a.date) - new Date(b.date);
-            case 'amount-desc': return b.amount - a.amount;
-            case 'amount-asc':  return a.amount - b.amount;
-            default:            return new Date(b.date) - new Date(a.date);
-          }
-        });
-      },
-
-    }, {
-      addTransaction:    this.#addTransaction.bind(this),
-      deleteTransaction: this.#deleteTransaction.bind(this),
     });
 
     // Pierce the closed shadow so child components can reach state

@@ -76,13 +76,17 @@ class Workspace extends HTMLElement {
     document.addEventListener('mouseup', this.#onMouseUp.bind(this));
 
     this.#state = new Flow(this.shadowRoot, {
-      workItems: null,
-      selectedWorkItem: null
-    }, {
-      selectWorkItem: this.#selectWorkItemHook.bind(this),
-      saveWorkItem: this.#saveWorkItem.bind(this)
-    }, {
-      label: 'Workspace'
+      init: {
+        workItems: null,
+        selectedWorkItem: null
+      },
+      hooks: {
+        selectWorkItem: this.#selectWorkItemHook.bind(this),
+        saveWorkItem: this.#saveWorkItem.bind(this)
+      },
+      options: {
+        label: 'Workspace'
+      }
     });
 
     this.#state.update({

@@ -47,8 +47,10 @@ Or import directly from a CDN:
     const app = document.getElementById('app');
 
     const state = new FlowState(app, {
-      count: 0,
-      doubled: (s) => s.count * 2,   // computed value
+      init: {
+        count: 0,
+        doubled: (s) => s.count * 2,   // computed value
+      },
     });
 
     document.getElementById('inc').addEventListener('click', () => {
@@ -70,15 +72,16 @@ Or import directly from a CDN:
 A `FlowState` instance is **scoped to a root DOM element**. State updates propagate to all descendants of that root. Only one `FlowState` instance can be mounted per element.
 
 ```js
-const state = new FlowState(rootElement, config, hooks, options);
+const state = new FlowState(rootElement, { init, hooks, options });
 ```
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `rootElement` | `Node` | The DOM element that owns this state scope |
-| `config` | `Object` | Initial state. Functions become **computed values**. |
-| `hooks` | `Object` | Non-reactive static values (e.g. callbacks, services) |
-| `options` | `Object` | `{ label: string }` — labels this instance in devtools |
+| `config` | `Object` | Configuration object: `{ init, hooks, options }` |
+| `config.init` | `Object` | Initial state. Functions become **computed values**. |
+| `config.hooks` | `Object` | Non-reactive static values (e.g. callbacks, services) |
+| `config.options` | `Object` | `{ label: string }` — labels this instance in devtools |
 
 Returns an **instance API** object: `{ update, watch, get, through }`.
 
@@ -88,11 +91,13 @@ Plain values and computed values are declared together in `config`. Any value wh
 
 ```js
 const state = new FlowState(app, {
-  firstName: 'Jane',
-  lastName: 'Doe',
-  fullName: (s) => `${s.firstName} ${s.lastName}`,  // computed
-  items: [],
-  total: (s) => s.items.reduce((sum, i) => sum + i.price, 0), // computed
+  init: {
+    firstName: 'Jane',
+    lastName: 'Doe',
+    fullName: (s) => `${s.firstName} ${s.lastName}`,  // computed
+    items: [],
+    total: (s) => s.items.reduce((sum, i) => sum + i.price, 0), // computed
+  },
 });
 ```
 
@@ -104,10 +109,12 @@ State can be deeply nested using plain objects:
 
 ```js
 const state = new FlowState(app, {
-  user: {
-    name: 'Jane',
-    address: {
-      city: 'Austin',
+  init: {
+    user: {
+      name: 'Jane',
+      address: {
+        city: 'Austin',
+      },
     },
   },
 });
@@ -189,7 +196,7 @@ FlowState.get(this, 'user.name', (userName) => {
 });
 ```
 
-### `FlowState.create(root, config, hooks, options)`
+### `FlowState.create(root, config)`
 
 Alias for `new FlowState(...)`.
 
@@ -198,7 +205,9 @@ Alias for `new FlowState(...)`.
 <script type="module">
   import { FlowState } from 'flow-state';
 
-  FlowState.create(document.querySelector('#app'), { count: 0 });
+  FlowState.create(document.querySelector('#app'), {
+    init: { count: 0 }
+  });
 </script>
 ```
 
@@ -252,9 +261,12 @@ After this, declarative bindings inside the shadow root will receive updates fro
 Hooks are non-reactive, static values that can be injected into the state scope — useful for passing callbacks, services, or config to deeply nested child components without prop-drilling.
 
 ```js
-const state = new FlowState(app, config, {
-  onSave: async (data) => { /* ... */ },
-  apiUrl: '/api/v1',
+const state = new FlowState(app, {
+  init: config,
+  hooks: {
+    onSave: async (data) => { /* ... */ },
+    apiUrl: '/api/v1',
+  }
 });
 ```
 

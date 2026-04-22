@@ -181,21 +181,24 @@ class TodoApp extends HTMLElement {
     this.#clearDoneBtn = shadow.getElementById('clear-done-btn');
 
     this.#state = Flow.create(this, {
-      todos: [],
-      filter: 'all',
+      init: {
+        todos: [],
+        filter: 'all',
 
-      // Recomputes whenever todos or filter changes
-      filteredTodos: (state) => {
-        if (state.filter === 'active') return state.todos.filter(t => !t.done);
-        if (state.filter === 'done')   return state.todos.filter(t => t.done);
-        return state.todos;
+        // Recomputes whenever todos or filter changes
+        filteredTodos: (state) => {
+          if (state.filter === 'active') return state.todos.filter(t => !t.done);
+          if (state.filter === 'done')   return state.todos.filter(t => t.done);
+          return state.todos;
+        },
+
+        // DOM-bound via flow-watch-activeCount-to-prop
+        activeCount: (state) => state.todos.filter(t => !t.done).length,
       },
-
-      // DOM-bound via flow-watch-activeCount-to-prop
-      activeCount: (state) => state.todos.filter(t => !t.done).length,
-    }, {
-      toggleTodo: this.#toggleTodo.bind(this),
-      deleteTodo: this.#deleteTodo.bind(this),
+      hooks: {
+        toggleTodo: this.#toggleTodo.bind(this),
+        deleteTodo: this.#deleteTodo.bind(this),
+      },
     });
 
     // Pierce the closed shadow root so child components can reach state

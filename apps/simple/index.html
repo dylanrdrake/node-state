@@ -27,7 +27,9 @@
     const appEl = document.querySelector('#app');
 
     const state = await FlowState.create(appEl, {
-      count: 0
+      init: {
+        count: 0
+      }
     });
 
     const incBtn = document.querySelector('#inc-btn');
