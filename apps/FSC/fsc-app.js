@@ -5,18 +5,19 @@ import './title-editor.js';
 FlowState.devtools();
 
 const HTML = String.raw;
+const CSS = String.raw;
 
-const template = document.createElement('template');
-template.innerHTML = HTML`
-  <style>
+class FSCApp extends FlowStateComponent {
+
+  styles = CSS`
     :host {
       display: block;
     }
-  </style>
-  <slot></slot>
-`;
+  `;
 
-class FSCApp extends FlowStateComponent {
+  template = HTML`
+    <slot></slot>
+  `;
 
   flowConfig = {
     init: {
@@ -25,9 +26,7 @@ class FSCApp extends FlowStateComponent {
     },
 
     hooks: {
-      changeTitle: (newTitle) => {
-        this.Flow.update({ title: newTitle });
-      }
+      changeTitle: this.#updateTitle.bind(this),
     },
 
     options: {
@@ -35,12 +34,12 @@ class FSCApp extends FlowStateComponent {
     }
   };
 
-
   constructor() {
     super();
+  }
 
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
+  #updateTitle(newTitle) {
+    this.Flow.update({ title: newTitle });
   }
 }
 
