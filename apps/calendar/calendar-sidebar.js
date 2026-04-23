@@ -159,6 +159,7 @@ template.innerHTML = HTML`
 
 
 export class CalendarSidebar extends HTMLElement {
+  #shadow;
   #state;
   #dateHeading;
   #eventsList;
@@ -173,30 +174,23 @@ export class CalendarSidebar extends HTMLElement {
 
   constructor() {
     super();
-    const shadow = this.attachShadow({ mode: 'open' });
-    shadow.appendChild(template.content.cloneNode(true));
-    shadow.adoptedStyleSheets = [sheet];
+    this.#shadow = this.attachShadow({ mode: 'open' });
+    this.#shadow.adoptedStyleSheets = [sheet];
 
-    this.#dateHeading = shadow.getElementById('date-heading');
-    this.#eventsList  = shadow.getElementById('events-list');
-    this.#noEvents    = shadow.getElementById('no-events');
-    this.#titleInput  = shadow.getElementById('title-input');
-    this.#colorRow    = shadow.getElementById('color-row');
-    this.#addBtn      = shadow.querySelector('.add-btn');
-
-    this.#state = Flow.create(shadow, {
+    this.#state = Flow.create(this.#shadow, {
       init: {
         eventInputValue: ''
       }
     });
 
-    Flow.watch(shadow, 'eventInputValue', (value) => {
-      if (value.length > 0) this.#addBtn.removeAttribute('disabled');
-      else this.#addBtn.setAttribute('disabled', '');
-    });
+    this.#shadow.appendChild(template.content.cloneNode(true));
 
-    Flow.get(this, 'addEvent').then(fn => { this.#addEvent = fn; });
-    Flow.get(this, 'deleteEvent').then(fn => { this.#deleteEvent = fn; });
+    this.#dateHeading = this.#shadow.getElementById('date-heading');
+    this.#eventsList  = this.#shadow.getElementById('events-list');
+    this.#noEvents    = this.#shadow.getElementById('no-events');
+    this.#titleInput  = this.#shadow.getElementById('title-input');
+    this.#colorRow    = this.#shadow.getElementById('color-row');
+    this.#addBtn      = this.#shadow.querySelector('.add-btn');
 
     this.#colorRow.addEventListener('click', (e) => {
       const swatch = e.target.closest('.color-swatch');
@@ -211,6 +205,16 @@ export class CalendarSidebar extends HTMLElement {
     this.#titleInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') this.#submit(); });
     this.#titleInput.addEventListener('input', (e) => {
       this.#state.update({ eventInputValue: e.target.value });
+    });
+  }
+
+  connectedCallback() {
+    this.#addEvent = Flow.get(this, 'addEvent');
+    this.#deleteEvent = Flow.get(this, 'deleteEvent');
+
+    Flow.watch(this.#shadow, 'eventInputValue', (value) => {
+      if (value.length > 0) this.#addBtn.removeAttribute('disabled');
+      else this.#addBtn.setAttribute('disabled', '');
     });
   }
 

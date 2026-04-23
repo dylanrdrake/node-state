@@ -239,8 +239,14 @@ function renderDetail(snap) {
     const list = document.createElement('div');
     list.className = 'watcher-list';
     for (const w of snap.watchers) {
-      // Find the snapshot whose rootTag starts with w.source (e.g. "work-view" matches "work-view (shadow)")
-      const sourceSnap = Array.from(snapshots.values()).find(s => s.rootTag.startsWith(w.source));
+      // Use the exact snapshot ID recorded at watcher registration time when available.
+      // Fall back to tag-name search only for elements without their own FlowState scope.
+      let sourceSnap = null;
+      if (w.sourceFlowId) {
+        sourceSnap = snapshots.get(w.sourceFlowId) ?? null;
+      } else {
+        sourceSnap = Array.from(snapshots.values()).find(s => s.rootTag.startsWith(w.source)) ?? null;
+      }
       const sourceId = sourceSnap?.id ?? null;
 
       const row = document.createElement('div');
@@ -254,12 +260,16 @@ function renderDetail(snap) {
         if (sourceId) {
           document.querySelector(`.tree-node[data-id="${sourceId}"]`)?.classList.add('highlighted');
           channel.postMessage({ type: 'highlight', id: sourceId });
+        } else if (w.sourceElId) {
+          channel.postMessage({ type: 'highlight-source-el', id: w.sourceElId });
         }
       });
       row.addEventListener('mouseleave', () => {
         if (sourceId) {
           document.querySelector(`.tree-node[data-id="${sourceId}"]`)?.classList.remove('highlighted');
           channel.postMessage({ type: 'clear-highlight', id: sourceId });
+        } else if (w.sourceElId) {
+          channel.postMessage({ type: 'clear-highlight', id: w.sourceElId });
         }
       });
       list.appendChild(row);

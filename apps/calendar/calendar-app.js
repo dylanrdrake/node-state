@@ -64,7 +64,6 @@ class CalendarApp extends HTMLElement {
   constructor() {
     super();
     const shadow = this.attachShadow({ mode: 'closed' });
-    shadow.appendChild(appTemplate.content.cloneNode(true));
     shadow.adoptedStyleSheets = [sheet];
 
     this.#state = Flow.create(this, {
@@ -135,6 +134,11 @@ class CalendarApp extends HTMLElement {
 
     // Let FlowState pierce the closed shadow to find flow-watch attributes
     this.#state.through(shadow);
+
+    // Stamp template AFTER FlowState is initialized so that child connectedCallbacks
+    // can synchronously resolve Flow.get/watch calls against the listener on `this`.
+    shadow.appendChild(appTemplate.content.cloneNode(true));
+
   }
 
   #prevMonth() {

@@ -110,7 +110,7 @@ template.innerHTML = HTML`
 
 export class CalendarGrid extends HTMLElement {
   #grid;
-  #selectDate;
+  #selectDate = () => {};
 
   constructor() {
     super();
@@ -119,8 +119,11 @@ export class CalendarGrid extends HTMLElement {
     shadow.adoptedStyleSheets = [sheet];
 
     this.#grid = shadow.getElementById('grid');
+  }
 
-    Flow.get(this, 'selectDate').then(fn => { this.#selectDate = fn; });
+  connectedCallback() {
+    this.#selectDate = Flow.get(this, 'selectDate');
+    console.log('CalendarGrid connected, selectDate:', this.#selectDate);
   }
 
   set days(days) {

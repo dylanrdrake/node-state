@@ -65,9 +65,9 @@ template.innerHTML = HTML`
 
 export class CalendarNav extends HTMLElement {
   #label;
-  #prevMonth;
-  #nextMonth;
-  #goToday;
+  #prevMonth = () => {};
+  #nextMonth = () => {};
+  #goToday = () => {};
 
   constructor() {
     super();
@@ -77,13 +77,16 @@ export class CalendarNav extends HTMLElement {
 
     this.#label = shadow.querySelector('.label');
 
-    Flow.get(this, 'prevMonth').then(fn => { this.#prevMonth = fn; });
-    Flow.get(this, 'nextMonth').then(fn => { this.#nextMonth = fn; });
-    Flow.get(this, 'goToday').then(fn => { this.#goToday = fn; });
-
     shadow.getElementById('prev').addEventListener('click', () => this.#prevMonth?.());
     shadow.getElementById('next').addEventListener('click', () => this.#nextMonth?.());
     shadow.getElementById('today').addEventListener('click', () => this.#goToday?.());
+  }
+
+
+  connectedCallback() {
+    this.#prevMonth = Flow.get(this, 'prevMonth');
+    this.#nextMonth = Flow.get(this, 'nextMonth');
+    this.#goToday = Flow.get(this, 'goToday');
   }
 
   set label(str) {
