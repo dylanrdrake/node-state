@@ -85,8 +85,8 @@ class TitlePanel extends HTMLElement {
     this.#readout = this.#shadow.getElementById('readout');
     this.#readoutBtn = this.#shadow.getElementById('read-btn');
 
-    this.#readoutBtn.addEventListener('click', async () => {
-      const message = await Flow.get(this.#shadow, 'message');
+    this.#readoutBtn.addEventListener('click', () => {
+      const message = Flow.get(this.#shadow, 'message');
       this.#readout.textContent = `Fetched value: ${message}`;
     });
   }

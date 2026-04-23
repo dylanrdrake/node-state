@@ -24,12 +24,27 @@
   <script type="module">
     import { FlowState } from 'flow-state';
 
+    const body = document.querySelector('body');
+
+    const bodyState = FlowState.create(body, {
+      init: {
+        test: 'hello'
+      }
+    });
+
     const appEl = document.querySelector('#app');
 
-    const state = await FlowState.create(appEl, {
+    const state = FlowState.create(appEl, {
       init: {
-        count: 0
+        count: 0,
+        test: 'hll'
       }
+    });
+
+    let test = bodyState.get('test');
+
+    state.watch('count', count => {
+      console.log('count changed to', count);
     });
 
     const incBtn = document.querySelector('#inc-btn');

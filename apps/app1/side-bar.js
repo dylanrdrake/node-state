@@ -117,12 +117,6 @@ class SideBar extends HTMLElement {
     this.#workItemsContainer = this.shadowRoot.getElementById('work-items-container');
     this.#workHistoryContainer = this.shadowRoot.getElementById('work-history');
 
-    Flow.get(this.shadowRoot, 'selectWorkItem', (fn) => this.#selectWorkItem = fn);
-
-    Flow.watch(this.shadowRoot, 'selectedWorkItem', this.#workItemSelected.bind(this));
-
-    Flow.watch(this.shadowRoot, 'workItems', this.#renderWorkItems.bind(this));
-
     this.#state = Flow.create(this.shadowRoot, {
       init: {
         history: [],
@@ -131,7 +125,12 @@ class SideBar extends HTMLElement {
         label: 'SideBar'
       }
     });
+  }
 
+  connectedCallback() {
+    this.#selectWorkItem = Flow.get(this.shadowRoot, 'selectWorkItem');
+    Flow.watch(this.shadowRoot, 'selectedWorkItem', this.#workItemSelected.bind(this));
+    Flow.watch(this.shadowRoot, 'workItems', this.#renderWorkItems.bind(this));
     Flow.watch(this.shadowRoot, 'history', this.#renderWorkHistory.bind(this));
   }
 

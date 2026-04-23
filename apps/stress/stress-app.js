@@ -361,7 +361,6 @@ class StressApp extends HTMLElement {
       },
     });
 
-    this.#state.through(this.#shadow);
     this.#setupControls();
   }
 

@@ -191,15 +191,7 @@ class BudgetApp extends HTMLElement {
   constructor() {
     super();
     const shadow = this.attachShadow({ mode: 'closed' });
-    shadow.appendChild(appTemplate.content.cloneNode(true));
     shadow.adoptedStyleSheets = [appSheet];
-
-    this.#txList    = shadow.getElementById('tx-list');
-    this.#txCount   = shadow.getElementById('tx-count');
-    this.#filters   = shadow.querySelector('.filters');
-    this.#filterBtns = shadow.querySelectorAll('.filter-btn');
-    this.#sortSelect = shadow.getElementById('sort-select');
-    this.#emptyMsg  = shadow.getElementById('empty-msg');
 
     this.#state = Flow.create(this, {
       init: {
@@ -261,6 +253,14 @@ class BudgetApp extends HTMLElement {
         deleteTransaction: this.#deleteTransaction.bind(this),
       },
     });
+
+    shadow.appendChild(appTemplate.content.cloneNode(true));
+    this.#txList    = shadow.getElementById('tx-list');
+    this.#txCount   = shadow.getElementById('tx-count');
+    this.#filters   = shadow.querySelector('.filters');
+    this.#filterBtns = shadow.querySelectorAll('.filter-btn');
+    this.#sortSelect = shadow.getElementById('sort-select');
+    this.#emptyMsg  = shadow.getElementById('empty-msg');
 
     // Pierce the closed shadow so child components can reach state
     this.#state.through(shadow);

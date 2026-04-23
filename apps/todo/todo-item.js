@@ -66,8 +66,8 @@ export class TodoItem extends HTMLElement {
   #doneCheckbox;
   #label;
   #deleteBtn;
-  #toggleTodoDone;
-  #deleteTodo;
+  #toggleTodoDone = () => {};
+  #deleteTodo = () => {};
 
   constructor(todo) {
     super();
@@ -87,14 +87,6 @@ export class TodoItem extends HTMLElement {
 
     if (todo.done) this.setAttribute('done', '');
 
-    Flow.get(this, 'toggleTodo').then(fn => {
-      this.#toggleTodoDone = fn;
-    });
-
-    Flow.get(this, 'deleteTodo').then(fn => {
-      this.#deleteTodo = fn;
-    });
-
     this.#doneCheckbox.addEventListener('change', () => {
       this.#toggleTodoDone?.(todo.id);
     });
@@ -102,6 +94,11 @@ export class TodoItem extends HTMLElement {
     this.#deleteBtn.addEventListener('click', () => {
       this.#deleteTodo?.(todo.id);
     });
+  }
+
+  connectedCallback() {
+    this.#toggleTodoDone = Flow.get(this, 'toggleTodo');
+    this.#deleteTodo = Flow.get(this, 'deleteTodo');
   }
 }
 

@@ -53,9 +53,7 @@ class TitleEditor extends HTMLElement {
   }
 
   connectedCallback() {
-    FlowState.get(this.#shadow, 'changeTitle').then(fn => {
-      this.#updateTitleHook = fn;
-    });
+    this.#updateTitleHook = FlowState.get(this.#shadow, 'changeTitle');
   }
 }
 

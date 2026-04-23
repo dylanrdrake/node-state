@@ -104,7 +104,7 @@ template.innerHTML = HTML`
 
 
 export class TransactionForm extends HTMLElement {
-  #addTransaction;
+  #addTransaction = () => {};
   #desc;
   #amount;
   #type;
@@ -125,12 +125,12 @@ export class TransactionForm extends HTMLElement {
     this.#err      = shadow.getElementById('err');
     this.#submitBtn = shadow.querySelector('button');
 
-    Flow.get(this, 'addTransaction').then(fn => {
-      this.#addTransaction = fn;
-    });
-
     this.#submitBtn.addEventListener('click', () => this.#submit());
     shadow.addEventListener('keydown', (e) => { if (e.key === 'Enter') this.#submit(); });
+  }
+
+  connectedCallback() {
+    this.#addTransaction = Flow.get(this, 'addTransaction');
   }
 
   #submit() {

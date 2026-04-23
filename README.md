@@ -168,6 +168,8 @@ const count = state.get('count');
 
 For use inside **child elements** that don't hold a direct reference to the parent `FlowState` instance. These methods dispatch events that bubble up to the nearest owning scope.
 
+Both methods are **synchronous** — the event dispatches and resolves inline. They must be called from `connectedCallback`, not from `constructor`. See [Timing Rules](#timing-rules) below.
+
 ### `FlowState.watch(element, key, callback)`
 
 Register a watcher from a descendant element. Bubbles up through the DOM to find the nearest `FlowState` scope that owns `key`.
@@ -182,18 +184,16 @@ class MyWidget extends HTMLElement {
 }
 ```
 
-### `FlowState.get(element, key, callback?)`
+### `FlowState.get(element, key)`
 
-Get a state value from a descendant element. Returns a promise and optionally accepts a callback.
+Get a state value from a descendant element synchronously. Returns the value directly.
 
 ```js
-const value = await FlowState.get(this, 'user.name');
-
-// OR...
-
-FlowState.get(this, 'user.name', (userName) => {
-  // Do something
-});
+class MyWidget extends HTMLElement {
+  connectedCallback() {
+    const userName = FlowState.get(this, 'user.name');
+  }
+}
 ```
 
 ### `FlowState.create(root, config)`
@@ -270,7 +270,74 @@ const state = new FlowState(app, {
 });
 ```
 
-Hooks are accessible via `FlowState.get(element, 'apiUrl')` like any other state value or `state.watch('onSave', fn)` (called once immediately like all watched values but will not fire again due to hooks being static and immutable).
+Hooks are accessible via `FlowState.get(element, 'apiUrl')` from a child's `connectedCallback` like any other state value, or via `state.watch('onSave', fn)` on the instance directly (called once immediately, then never again since hooks are static).
+
+---
+
+## Timing Rules
+
+FlowState's static methods (`FlowState.watch`, `FlowState.get`) work by dispatching a DOM event that bubbles up to the nearest ancestor with a matching FlowState scope. For this to work, the parent's FlowState instance must already be initialized and listening when the event fires.
+
+### Use static methods in `connectedCallback`, not `constructor`
+
+The browser fires `connectedCallback` **parent-first, then children**. By the time a child's `connectedCallback` runs, the parent's `connectedCallback` has already completed — so the FlowState listener is guaranteed to exist.
+
+Constructors fire in the opposite order (children first), so calling static methods there will dispatch an event before any parent listener is registered and the call will silently do nothing.
+
+```js
+// ✅ Correct
+class MyWidget extends HTMLElement {
+  connectedCallback() {
+    FlowState.watch(this, 'count', value => { this.textContent = value; });
+    this.#hook = FlowState.get(this, 'onSave');
+  }
+}
+
+// ❌ Wrong — parent listener doesn't exist yet
+class MyWidget extends HTMLElement {
+  constructor() {
+    super();
+    FlowState.watch(this, 'count', value => { this.textContent = value; }); // silent no-op
+  }
+}
+```
+
+### Initialize FlowState before stamping children into the DOM
+
+When a parent element creates its FlowState instance and stamps its template in the same synchronous block, the order matters. Appending a template to the DOM synchronously connects all child custom elements, firing their `connectedCallback`s immediately. If FlowState isn't initialized yet at that point, those child calls will find no listener.
+
+**Always create the FlowState instance before calling `appendChild`:**
+
+```js
+class MyParent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+
+    // ✅ FlowState first — listener is registered before children connect
+    this.#state = new FlowState(this.shadowRoot, { init: { count: 0 } });
+
+    // Children's connectedCallbacks fire here and can successfully call
+    // FlowState.watch / FlowState.get
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
+  }
+}
+```
+
+```js
+class MyParent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+
+    // ❌ Children connect here, FlowState doesn't exist yet
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
+
+    // Too late — child connectedCallbacks already fired
+    this.#state = new FlowState(this.shadowRoot, { init: { count: 0 } });
+  }
+}
+```
 
 ---
 

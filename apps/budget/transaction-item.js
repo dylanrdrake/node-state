@@ -101,7 +101,7 @@ template.innerHTML = HTML`
 
 
 export class TransactionItem extends HTMLElement {
-  #deleteTransaction;
+  #deleteTransaction = () => {};
   #deleteBtn;
 
   constructor(tx) {
@@ -124,13 +124,13 @@ export class TransactionItem extends HTMLElement {
 
     this.#deleteBtn = shadow.querySelector('button');
 
-    Flow.get(this, 'deleteTransaction').then(fn => {
-      this.#deleteTransaction = fn;
-    });
-
     this.#deleteBtn.addEventListener('click', () => {
       this.#deleteTransaction?.(tx.id);
     });
+  }
+
+  connectedCallback() {
+    this.#deleteTransaction = Flow.get(this, 'deleteTransaction');
   }
 }
 

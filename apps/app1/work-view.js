@@ -175,30 +175,7 @@ class WorkView extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
     this.shadowRoot.adoptedStyleSheets = [sheet];
-
-    this.#workView = this.shadowRoot.getElementById('work-view');
-    this.#noItemMsg = this.shadowRoot.getElementById('no-selected-item-msg');
-    this.#editor = this.shadowRoot.getElementById('editor');
-    this.#editorFields = this.shadowRoot.getElementById('editor-fields');
-    this.#saveBtn = this.shadowRoot.getElementById('save-btn');
-    this.#closeBtn = this.shadowRoot.getElementById('close-btn');
-    this.#map = this.shadowRoot.querySelector('arcgis-map');
-
-    this.#graphicsLayer = new GraphicsLayer();
-    this.#map.addEventListener('arcgisViewReadyChange', () => {
-      this.#map.view.map.add(this.#graphicsLayer);
-    });
-
-    Flow.get(this.shadowRoot, 'saveWorkItem', (fn) => this.#saveWorkItem = fn);
-    Flow.get(this.shadowRoot, 'selectWorkItem', (fn) => this.#selectWorkItem = fn);
-    Flow.watch(this.shadowRoot, 'workItems', this.#workItemsUpdated.bind(this));
-    Flow.watch(this.shadowRoot, 'selectedWorkItem', (workItem) => {
-      if (workItem) {
-        this.#map.view.goTo({ center: [workItem.longitude, workItem.latitude], zoom: 14 });
-      }
-    });
 
     this.#state = Flow.create(this.shadowRoot, {
       init: {
@@ -207,6 +184,20 @@ class WorkView extends HTMLElement {
       options: {
         label: 'WorkView'
       }
+    });
+
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
+
+    this.#workView = this.shadowRoot.getElementById('work-view');
+    this.#noItemMsg = this.shadowRoot.getElementById('no-selected-item-msg');
+    this.#editor = this.shadowRoot.getElementById('editor');
+    this.#editorFields = this.shadowRoot.getElementById('editor-fields');
+    this.#saveBtn = this.shadowRoot.getElementById('save-btn');
+    this.#closeBtn = this.shadowRoot.getElementById('close-btn');
+    this.#map = this.shadowRoot.querySelector('arcgis-map');
+    this.#map.addEventListener('arcgisViewReadyChange', () => {
+      this.#graphicsLayer = new GraphicsLayer();
+      this.#map.view.map.add(this.#graphicsLayer);
     });
 
     this.#saveBtn.addEventListener('click', () => {
@@ -220,6 +211,17 @@ class WorkView extends HTMLElement {
       this.selectedWorkItem = null;
       this.#state.update({ edits: {} });
       this.#selectWorkItem(null);
+    });
+  }
+
+  connectedCallback() {
+    this.#saveWorkItem = Flow.get(this.shadowRoot, 'saveWorkItem');
+    this.#selectWorkItem = Flow.get(this.shadowRoot, 'selectWorkItem');
+    Flow.watch(this.shadowRoot, 'workItems', this.#workItemsUpdated.bind(this));
+    Flow.watch(this.shadowRoot, 'selectedWorkItem', (workItem) => {
+      if (workItem) {
+        this.#map.view.goTo({ center: [workItem.longitude, workItem.latitude], zoom: 14 });
+      }
     });
   }
 

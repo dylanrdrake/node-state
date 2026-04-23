@@ -16,7 +16,8 @@ class FSCApp extends FlowStateComponent {
   `;
 
   template = HTML`
-    <slot></slot>
+    <title-panel></title-panel>
+    <title-editor></title-editor>
   `;
 
   flowConfig = {
@@ -39,7 +40,7 @@ class FSCApp extends FlowStateComponent {
   }
 
   #updateTitle(newTitle) {
-    this.Flow.update({ title: newTitle });
+    this.state.update({ title: newTitle });
   }
 }
 
