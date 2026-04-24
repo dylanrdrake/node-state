@@ -10,7 +10,7 @@ class KanbanColumn extends FlowStateComponent {
   #colTitle = null;
   #cardCount = null;
 
-  shadowMode = 'open';
+  shadowMode = 'closed';
 
   styles = CSS`
     :host {
@@ -84,17 +84,19 @@ class KanbanColumn extends FlowStateComponent {
   flowConfig = {
     init: {
       columnData: null,    // { id, title, cards[] } — set by parent watcher
-      selectedCardId: null,
     },
     options: { label: 'KanbanColumn' }
   };
 
 
   connectedCallback() {
+    // Overwrite FlowStateComponent's attachShadow to get a ref to the closed shadow root.
+    // FlowStateComponent will still captures it into #flowRoot and use it for template stamping and adoptedStyleSheets.
+    const shadow = this.attachShadow({ mode: this.shadowMode });
+
     super.connectedCallback();
 
     this.#columnId = this.dataset.columnId;
-    const shadow = this.shadowRoot;
     this.#cardsList  = shadow.getElementById('cards-list');
     this.#colTitle   = shadow.getElementById('col-title');
     this.#cardCount  = shadow.getElementById('card-count');
@@ -102,7 +104,6 @@ class KanbanColumn extends FlowStateComponent {
     // Get shared hooks from parent KanbanApp scope
     const moveCard   = FlowState.get(this, 'moveCard');
     const deleteCard = FlowState.get(this, 'deleteCard');
-    const selectCard = FlowState.get(this, 'selectCard');
 
     // Watch the full columns list from the parent to extract this column's data
     // and keep the move-target selector up to date.

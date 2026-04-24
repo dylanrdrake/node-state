@@ -134,7 +134,7 @@ class KanbanCard extends HTMLElement {
     });
 
     // Watch global selectedCard from KanbanApp to toggle selected attribute
-    FlowState.watch(this, 'selectedCardId', (selectedCardId) => {
+    FlowState.watch(this, 'selectedCard', (selectedCardId) => {
       this.toggleAttribute('selected', selectedCardId === this.#cardId);
     });
 
