@@ -111,13 +111,14 @@ class SideBar extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
-    this.shadowRoot.adoptedStyleSheets = [sheet];
+    const shadowRoot = this.shadowRoot;
+    shadowRoot.appendChild(template.content.cloneNode(true));
+    shadowRoot.adoptedStyleSheets = [sheet];
 
-    this.#workItemsContainer = this.shadowRoot.getElementById('work-items-container');
-    this.#workHistoryContainer = this.shadowRoot.getElementById('work-history');
+    this.#workItemsContainer = shadowRoot.getElementById('work-items-container');
+    this.#workHistoryContainer = shadowRoot.getElementById('work-history');
 
-    this.#state = Flow.create(this.shadowRoot, {
+    this.#state = Flow.create(this, {
       init: {
         history: [],
       },
@@ -128,10 +129,10 @@ class SideBar extends HTMLElement {
   }
 
   connectedCallback() {
-    this.#selectWorkItem = Flow.get(this.shadowRoot, 'selectWorkItem');
-    Flow.watch(this.shadowRoot, 'selectedWorkItem', this.#workItemSelected.bind(this));
-    Flow.watch(this.shadowRoot, 'workItems', this.#renderWorkItems.bind(this));
-    Flow.watch(this.shadowRoot, 'history', this.#renderWorkHistory.bind(this));
+    this.#selectWorkItem = Flow.get(this, 'selectWorkItem');
+    Flow.watch(this, 'selectedWorkItem', this.#workItemSelected.bind(this));
+    Flow.watch(this, 'workItems', this.#renderWorkItems.bind(this));
+    Flow.watch(this, 'history', this.#renderWorkHistory.bind(this));
   }
 
 

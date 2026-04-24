@@ -133,7 +133,7 @@ class CalendarApp extends HTMLElement {
     });
 
     // Let FlowState pierce the closed shadow to find flow-watch attributes
-    this.#state.through(shadow);
+    Flow.through(shadow);
 
     // Stamp template AFTER FlowState is initialized so that child connectedCallbacks
     // can synchronously resolve Flow.get/watch calls against the listener on `this`.

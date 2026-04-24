@@ -241,18 +241,40 @@ Bind state to element properties or attributes directly in HTML — no JavaScrip
 
 ## Shadow DOM — `FlowState.through()`
 
-By default, `FlowState` pierces through open shadow DOMs. Call `FlowState.through()` from inside a shadow root to opt it in to parent state scopes:
+By default, `FlowState` traverses **open** shadow DOMs automatically when searching for declarative bindings. For **closed** shadow roots, call `FlowState.through(shadowRoot)` to explicitly register the shadow with the nearest parent `FlowState` scope.
+
+> **Mount FlowState on the host element, not the ShadowRoot.** 
 
 ```js
 class MyCard extends HTMLElement {
   connectedCallback() {
-    this.attachShadow({ mode: 'closed' });
-    FlowState.through(this.shadowRoot); // link this shadow to the parent scope
+    // Hold a reference to the closed shadow — this.shadowRoot returns null for closed shadows
+    const shadow = this.attachShadow({ mode: 'closed' });
+
+    // Mount FlowState on the host (this), not the shadow
+    const state = new FlowState(this, { init: { ... } });
+
+    // Register the closed shadow so bindings inside it receive updates
+    state.through(shadow); // only pierces shadow with only this FlowState instance (keep your closed component closed off from outside state too)
+    FlowState.through(shadow); // static method connects shadow to this component's FlowState AND
+    // any higher FlowState flows (scopes) (will behave consistently with non-shadow/open-shadow roots)
   }
 }
 ```
 
-After this, declarative bindings inside the shadow root will receive updates from the parent `FlowState` scope.
+Or, to register a child component's closed shadow with a **parent** scope from inside the child:
+
+```js
+class MyCard extends HTMLElement {
+  connectedCallback() {
+    const shadow = this.attachShadow({ mode: 'closed' });
+    // Link this shadow to the nearest ancestor FlowState scope
+    FlowState.through(shadow);
+  }
+}
+```
+
+After registration, declarative bindings inside the shadow root will receive updates from the owning `FlowState` scope.
 
 ---
 
@@ -314,8 +336,8 @@ class MyParent extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
 
-    // ✅ FlowState first — listener is registered before children connect
-    this.#state = new FlowState(this.shadowRoot, { init: { count: 0 } });
+    // ✅ FlowState on the host element (light DOM)
+    this.#state = new FlowState(this, { init: { count: 0 } });
 
     // Children's connectedCallbacks fire here and can successfully call
     // FlowState.watch / FlowState.get
@@ -334,7 +356,7 @@ class MyParent extends HTMLElement {
     this.shadowRoot.appendChild(template.content.cloneNode(true));
 
     // Too late — child connectedCallbacks already fired
-    this.#state = new FlowState(this.shadowRoot, { init: { count: 0 } });
+    this.#state = new FlowState(this, { init: { count: 0 } });
   }
 }
 ```
@@ -354,6 +376,57 @@ FlowState.devtools(); // opens the panel in a new browser tab
 The panel updates in real time as state changes (throttled to ~10 fps). Click any instance to inspect its values. Hover to highlight the corresponding DOM element.
 
 > The devtools use the `BroadcastChannel` API and work across tabs in the same origin.
+
+---
+
+## FlowStateComponent
+
+`FlowStateComponent` is a base class for custom elements that handles FlowState setup automatically. It initializes FlowState on the host element, applies styles, stamps the template into the shadow root, and registers the shadow (if opted-into with shadowMode property) via `through()` — all in the right order.
+
+```js
+import { FlowStateComponent } from 'flow-state';
+
+class MyCounter extends FlowStateComponent {
+  shadowMode = 'open'; // auto-attaches shadow DOM
+
+  styles = `
+    :host { display: block; }
+    button { font-size: 1rem; }
+  `;
+
+  template = `
+    <span flow-watch-count-to-prop="textContent"></span>
+    <button id="inc">+</button>
+  `;
+
+  flowConfig = {
+    init: { count: 0 },
+    options: { label: 'MyCounter' },
+  };
+
+  connectedCallback() {
+    super.connectedCallback(); // must call super — sets up FlowState and stamps template
+
+    this.shadowRoot.getElementById('inc').addEventListener('click', () => {
+      this.state.update(prev => ({ count: prev.count + 1 }));
+    });
+  }
+}
+
+customElements.define('my-counter', MyCounter);
+```
+
+### Subclass API
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `shadowMode` | `'open' \| 'closed'` | Auto-attaches a shadow root of this mode |
+| `template` | `string` | HTML string stamped into the shadow (or light DOM if no shadow) |
+| `styles` | `string` | CSS string applied via `adoptedStyleSheets` |
+| `flowConfig` | `object` | Same `{ init, hooks, options }` config as `new FlowState(...)` |
+| `this.state` | instance API | The `FlowState` instance — available after `super.connectedCallback()` |
+
+`FlowStateComponent` mounts FlowState on `this` (the host element) and calls `state.through(shadowRoot)` automatically, so scope traversal works correctly across shadow boundaries.
 
 ---
 

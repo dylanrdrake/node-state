@@ -68,7 +68,7 @@ class Workspace extends HTMLElement {
 
     // Initialize FlowState BEFORE stamping the template so the listener
     // is registered before child connectedCallbacks fire and dispatch flow-state-get/watch events.
-    this.#state = new Flow(this.shadowRoot, {
+    this.#state = new Flow(this, {
       init: {
         workItems: [
           { id: 1,  name: 'Seattle Waterfront',       longitude: -122.3321, latitude: 47.6062  },

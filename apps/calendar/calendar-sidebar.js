@@ -159,7 +159,6 @@ template.innerHTML = HTML`
 
 
 export class CalendarSidebar extends HTMLElement {
-  #shadow;
   #state;
   #dateHeading;
   #eventsList;
@@ -174,23 +173,23 @@ export class CalendarSidebar extends HTMLElement {
 
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: 'open' });
-    this.#shadow.adoptedStyleSheets = [sheet];
+    const shadow = this.attachShadow({ mode: 'open' });
+    shadow.adoptedStyleSheets = [sheet];
 
-    this.#state = Flow.create(this.#shadow, {
+    this.#state = Flow.create(this, {
       init: {
         eventInputValue: ''
       }
     });
 
-    this.#shadow.appendChild(template.content.cloneNode(true));
+    shadow.appendChild(template.content.cloneNode(true));
 
-    this.#dateHeading = this.#shadow.getElementById('date-heading');
-    this.#eventsList  = this.#shadow.getElementById('events-list');
-    this.#noEvents    = this.#shadow.getElementById('no-events');
-    this.#titleInput  = this.#shadow.getElementById('title-input');
-    this.#colorRow    = this.#shadow.getElementById('color-row');
-    this.#addBtn      = this.#shadow.querySelector('.add-btn');
+    this.#dateHeading = shadow.getElementById('date-heading');
+    this.#eventsList  = shadow.getElementById('events-list');
+    this.#noEvents    = shadow.getElementById('no-events');
+    this.#titleInput  = shadow.getElementById('title-input');
+    this.#colorRow    = shadow.getElementById('color-row');
+    this.#addBtn      = shadow.querySelector('.add-btn');
 
     this.#colorRow.addEventListener('click', (e) => {
       const swatch = e.target.closest('.color-swatch');
@@ -212,7 +211,7 @@ export class CalendarSidebar extends HTMLElement {
     this.#addEvent = Flow.get(this, 'addEvent');
     this.#deleteEvent = Flow.get(this, 'deleteEvent');
 
-    Flow.watch(this.#shadow, 'eventInputValue', (value) => {
+    Flow.watch(this, 'eventInputValue', (value) => {
       if (value.length > 0) this.#addBtn.removeAttribute('disabled');
       else this.#addBtn.setAttribute('disabled', '');
     });

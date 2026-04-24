@@ -174,10 +174,10 @@ class WorkView extends HTMLElement {
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.adoptedStyleSheets = [sheet];
+    const shadowRoot =this.attachShadow({ mode: 'open' });
+    shadowRoot.adoptedStyleSheets = [sheet];
 
-    this.#state = Flow.create(this.shadowRoot, {
+    this.#state = Flow.create(this, {
       init: {
         edits: null
       },
@@ -186,15 +186,15 @@ class WorkView extends HTMLElement {
       }
     });
 
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    shadowRoot.appendChild(template.content.cloneNode(true));
 
-    this.#workView = this.shadowRoot.getElementById('work-view');
-    this.#noItemMsg = this.shadowRoot.getElementById('no-selected-item-msg');
-    this.#editor = this.shadowRoot.getElementById('editor');
-    this.#editorFields = this.shadowRoot.getElementById('editor-fields');
-    this.#saveBtn = this.shadowRoot.getElementById('save-btn');
-    this.#closeBtn = this.shadowRoot.getElementById('close-btn');
-    this.#map = this.shadowRoot.querySelector('arcgis-map');
+    this.#workView = shadowRoot.getElementById('work-view');
+    this.#noItemMsg = shadowRoot.getElementById('no-selected-item-msg');
+    this.#editor = shadowRoot.getElementById('editor');
+    this.#editorFields = shadowRoot.getElementById('editor-fields');
+    this.#saveBtn = shadowRoot.getElementById('save-btn');
+    this.#closeBtn = shadowRoot.getElementById('close-btn');
+    this.#map = shadowRoot.querySelector('arcgis-map');
     this.#map.addEventListener('arcgisViewReadyChange', () => {
       this.#graphicsLayer = new GraphicsLayer();
       this.#map.view.map.add(this.#graphicsLayer);
@@ -215,10 +215,10 @@ class WorkView extends HTMLElement {
   }
 
   connectedCallback() {
-    this.#saveWorkItem = Flow.get(this.shadowRoot, 'saveWorkItem');
-    this.#selectWorkItem = Flow.get(this.shadowRoot, 'selectWorkItem');
-    Flow.watch(this.shadowRoot, 'workItems', this.#workItemsUpdated.bind(this));
-    Flow.watch(this.shadowRoot, 'selectedWorkItem', (workItem) => {
+    this.#saveWorkItem = Flow.get(this, 'saveWorkItem');
+    this.#selectWorkItem = Flow.get(this, 'selectWorkItem');
+    Flow.watch(this, 'workItems', this.#workItemsUpdated.bind(this));
+    Flow.watch(this, 'selectedWorkItem', (workItem) => {
       if (workItem) {
         this.#map.view.goTo({ center: [workItem.longitude, workItem.latitude], zoom: 14 });
       }
@@ -290,7 +290,7 @@ class WorkView extends HTMLElement {
 
   
   #workItemsUpdated(workItems) {
-    if (!workItems?.length) return;
+    if (!workItems?.length || !this.#graphicsLayer) return;
     this.#graphicsLayer.removeAll();
     const symbol = new SimpleMarkerSymbol({
       color: [25, 118, 210],

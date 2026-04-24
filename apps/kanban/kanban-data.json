@@ -55,6 +55,16 @@
     "title": "To Do",
     "cards": [
       {
+        "id": 1777004597406,
+        "title": "🔴 Does mounting a FlowState to a closed shadowRoot prevent the limited hasKey API from working?",
+        "desc": ""
+      },
+      {
+        "id": 1777004729715,
+        "title": "🔴 Make sure closed shadowRoots and .through() work in FSCs",
+        "desc": ""
+      },
+      {
         "id": 104,
         "title": "🔴 #get skips falsy hook values",
         "desc": "if (this.#hooks[key]) is falsy for hooks whose value is 0, false, null, or \"\". Those hooks are silently ignored and undefined is returned instead.\n\nFix: Change to if (key in this.#hooks) — the same pattern already used correctly in #watch."

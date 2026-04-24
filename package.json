@@ -43,5 +43,13 @@
   "engines": {
     "node": ">=18"
   },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^3.1.2",
+    "happy-dom": "^17.4.4"
+  },
   "sideEffects": false
 }

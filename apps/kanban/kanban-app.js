@@ -187,8 +187,6 @@ class KanbanApp extends FlowStateComponent {
   #modalColumn;
   #editingCard = null; // { card: Card|null, columnId: string }
 
-  shadowMode = 'open';
-
   styles = styles;
 
   template = template;
@@ -210,20 +208,20 @@ class KanbanApp extends FlowStateComponent {
   connectedCallback() {
     super.connectedCallback();
 
-    this.#board        = this.shadowRoot.getElementById('board');
-    this.#newCardBtn   = this.shadowRoot.getElementById('new-card-btn');
-    this.#modalBackdrop = this.shadowRoot.getElementById('modal-backdrop');
-    this.#modalHeading  = this.shadowRoot.querySelector('.modal h2');
-    this.#modalTitle    = this.shadowRoot.getElementById('modal-title');
-    this.#modalDesc     = this.shadowRoot.getElementById('modal-desc');
-    this.#modalColumn   = this.shadowRoot.getElementById('modal-column');
+    this.#board         = this.querySelector('#board');
+    this.#newCardBtn    = this.querySelector('#new-card-btn');
+    this.#modalBackdrop = this.querySelector('#modal-backdrop');
+    this.#modalHeading  = this.querySelector('.modal h2');
+    this.#modalTitle    = this.querySelector('#modal-title');
+    this.#modalDesc     = this.querySelector('#modal-desc');
+    this.#modalColumn   = this.querySelector('#modal-column');
 
     // Close modal on backdrop click
     this.#modalBackdrop.addEventListener('click', (e) => {
       if (e.target === this.#modalBackdrop) this.#closeModal();
     });
-    this.shadowRoot.getElementById('modal-cancel').addEventListener('click', () => this.#closeModal());
-    this.shadowRoot.getElementById('modal-save').addEventListener('click', () => this.#saveModal());
+    this.querySelector('#modal-cancel').addEventListener('click', () => this.#closeModal());
+    this.querySelector('#modal-save').addEventListener('click', () => this.#saveModal());
 
     // Close on Escape
     window.addEventListener('keydown', (e) => {
